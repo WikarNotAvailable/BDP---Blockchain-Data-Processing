@@ -1,0 +1,8 @@
+.env
+.venv
+
+# parquets
+/data_batches
+
+#logs
+data_collection.log
