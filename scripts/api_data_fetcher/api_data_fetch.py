@@ -116,11 +116,15 @@ def process_bitcoin_transactions(output: list, batch_number: dict, data_sizes: d
     logging.info("Last 100 Bitcoin transactions:")
     if len(output) + len(transactions) > BATCH_SIZE:
         try:
+            new_to_batch = transactions[: (BATCH_SIZE - len(output))]
+            output.extend(new_to_batch)
+
             tx_df = pl.DataFrame(output, strict=False, schema=bitcoin_schema)
             save_batch(
                 output, tx_df, batch_number["value"], "bitcoin", data_sizes, DRY_RUN
             )
-            output.clear()  # Clear output after saving
+
+            output = transactions[-(len(transactions) - BATCH_SIZE + len(output)) :]
             batch_number["value"] += 1
         except Exception as e:
             log_error("Error while creating Bitcoin DataFrame", e)
@@ -155,6 +159,11 @@ def process_ethereum_transactions(output: list, batch_number: dict, data_sizes: 
     if "result" in block and block["result"]["transactions"]:
         if len(block["result"]["transactions"]) + len(output) > BATCH_SIZE:
             try:
+                new_to_batch = block["result"]["transactions"][
+                    : (BATCH_SIZE - len(output))
+                ]
+                output.extend(new_to_batch)
+
                 tx_df = pl.DataFrame(output, strict=False, schema=ethereum_schema)
                 save_batch(
                     output,
@@ -164,7 +173,10 @@ def process_ethereum_transactions(output: list, batch_number: dict, data_sizes: 
                     data_sizes,
                     DRY_RUN,
                 )
-                output.clear()  # Clear output after saving
+
+                output = block["result"]["transactions"][
+                    -(len(block["result"]["transactions"]) - BATCH_SIZE + len(output)) :
+                ]
                 batch_number["value"] += 1
             except Exception as e:
                 log_error("Error while creating Ethereum DataFrame", e)
@@ -247,6 +259,11 @@ def process_solana_transactions(output: list, batch_number: dict, data_sizes: di
         if "result" in block:
             if len(block["result"]["transactions"]) + len(output) > BATCH_SIZE:
                 try:
+                    new_to_batch = block["result"]["transactions"][
+                        : (BATCH_SIZE - len(output))
+                    ]
+                    output.extend(new_to_batch)
+
                     tx_df = pl.DataFrame(output, strict=False, schema=solana_schema)
                     tx_df = tx_df.unnest(columns=["meta", "transaction"])
                     save_batch(
@@ -257,10 +274,22 @@ def process_solana_transactions(output: list, batch_number: dict, data_sizes: di
                         data_sizes,
                         DRY_RUN,
                     )
-                    output.clear()  # Clear output after saving
+
+                    output = block["result"]["transactions"][
+                        -(
+                            len(block["result"]["transactions"])
+                            - BATCH_SIZE
+                            + len(output)
+                        ) :
+                    ]
                     batch_number["value"] += 1
                 except Exception as e:
                     log_error("Error while creating Solana DataFrame", e)
+
+            block_timestamp = block["result"]["blockTime"]
+
+            for transaction in block["result"]["transactions"]:
+                transaction["timestamp"] = block_timestamp
 
             output.extend(block["result"]["transactions"])
             logging.info(f"[Solana] Block hash: {block['result']['blockhash']}")
