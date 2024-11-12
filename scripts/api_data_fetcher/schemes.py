@@ -242,3 +242,194 @@ ethereum_schema = {
     "value": pl.Utf8,
     "yParity": pl.Utf8,
 }
+
+solana_blocks_schema = {
+    "slot": pl.Int64,
+    "block_hash": pl.Utf8,
+    "block_timestamp": pl.Datetime,
+    "height": pl.Int64,
+    "previous_block_hash": pl.Utf8,
+    "transaction_count": pl.Int64,
+    "leader_reward": pl.Float64,
+    "leader": pl.Utf8
+}
+
+solana_token_transfers_schema = {
+    "block_slot": pl.Int64,
+    "block_hash": pl.Utf8,
+    "block_timestamp": pl.Datetime,
+    "tx_signature": pl.Utf8,
+    "source": pl.Utf8,
+    "destination": pl.Utf8,
+    "authority": pl.Utf8,
+    "value": pl.Float64,
+    "decimals": pl.Float64,
+    "mint": pl.Utf8,
+    "mint_authority": pl.Utf8,
+    "fee": pl.Float64,
+    "fee_decimals": pl.Float64,
+    "memo": pl.Utf8,
+    "transfer_type": pl.Utf8
+}
+
+solana_transactions_schema = {
+    "block_slot": pl.Int64,
+    "block_hash": pl.Utf8,
+    "block_timestamp": pl.Datetime,
+    "recent_block_hash": pl.Utf8,
+    "signature": pl.Utf8,
+    "index": pl.Int64,
+    "fee": pl.Float64,
+    "status": pl.Utf8,
+    "err": pl.Utf8,
+    "compute_units_consumed": pl.Float64,
+    "accounts": pl.List(pl.Struct([
+        pl.Field("pubkey", pl.Utf8),
+        pl.Field("signer", pl.Boolean),
+        pl.Field("writable", pl.Boolean)
+    ])),
+    "log_messages": pl.List(pl.Utf8), 
+    "balance_changes": pl.List(pl.Struct([
+        pl.Field("account", pl.Utf8),
+        pl.Field("before", pl.Float64),
+        pl.Field("after", pl.Float64)
+    ])),
+    "pre_token_balances": pl.List(pl.Struct([
+        pl.Field("account_index", pl.Int64),
+        pl.Field("mint", pl.Utf8),
+        pl.Field("owner", pl.Utf8),
+        pl.Field("amount", pl.Float64),
+        pl.Field("decimals", pl.Int64)
+    ])),
+    "post_token_balances": pl.List(pl.Struct([
+        pl.Field("account_index", pl.Int64),
+        pl.Field("mint", pl.Utf8),
+        pl.Field("owner", pl.Utf8),
+        pl.Field("amount", pl.Float64),
+        pl.Field("decimals", pl.Int64)
+    ]))
+}
+
+bitcoin_blocks_schema = {
+    "data": pl.Utf8,
+    "hash": pl.Utf8,
+    "size": pl.Int64,
+    "stripped_size": pl.Int64,
+    "weight": pl.Int64,
+    "number": pl.Int64,
+    "version": pl.Int32,
+    "merkle_root": pl.Utf8,
+    "timestamp": pl.Datetime,
+    "nonce": pl.Int64,
+    "bits": pl.Utf8,
+    "coinbase_param": pl.Utf8,
+    "transaction_count": pl.Int64,
+    "mediantime": pl.Datetime,
+    "difficulty": pl.Float64,
+    "chainwork": pl.Utf8,
+    "previousblockhash": pl.Utf8
+}
+
+input_struct = pl.Struct([
+    pl.Field("index", pl.Int64),
+    pl.Field("spent_transaction_hash", pl.Utf8),
+    pl.Field("spent_output_index", pl.Int64),
+    pl.Field("script_asm", pl.Utf8),
+    pl.Field("script_hex", pl.Utf8),
+    pl.Field("sequence", pl.Int64),
+    pl.Field("required_signatures", pl.Int64),
+    pl.Field("type", pl.Utf8),
+    pl.Field("address", pl.Utf8),
+    pl.Field("value", pl.Float64)
+])
+
+output_struct = pl.Struct([
+    pl.Field("index", pl.Int64),
+    pl.Field("script_asm", pl.Utf8),
+    pl.Field("script_hex", pl.Utf8),
+    pl.Field("required_signatures", pl.Int64),
+    pl.Field("type", pl.Utf8),
+    pl.Field("address", pl.Utf8),
+    pl.Field("value", pl.Float64)
+])
+
+bitcoin_transactions_schema = {
+    "data": pl.Utf8,
+    "hash": pl.Utf8,
+    "size": pl.Int64,
+    "virtual_size": pl.Int64,
+    "version": pl.Int64,
+    "lock_time": pl.Int64,
+    "block_hash": pl.Utf8,
+    "block_number": pl.UInt64,
+    "block_timestamp": pl.Datetime,
+    "index": pl.UInt64,
+    "input_count": pl.UInt64,
+    "output_count": pl.UInt64,
+    "input_value": pl.Float64,
+    "output_value": pl.Float64,
+    "is_coinbase": pl.Boolean,
+    "fee": pl.Float64,
+    "inputs": pl.List(input_struct),
+    "outputs": pl.List(output_struct),
+}
+
+ethereum_blocks_schema = {
+    "data": pl.UInt8,
+    "timestamp": pl.Datetime,
+    "number": pl.Int64,
+    "hash": pl.Utf8,
+    "parent_hash": pl.Utf8,
+    "nonce": pl.Utf8,
+    "sha3_uncles": pl.Utf8,
+    "logs_bloom": pl.Utf8,
+    "transactions_root": pl.Utf8,
+    "state_root": pl.Utf8,
+    "receipts_root": pl.Utf8,
+    "miner": pl.Utf8,
+    "difficulty": pl.Float64,
+    "total_difficulty": pl.Float64,
+    "size": pl.Int64,
+    "extra_data": pl.Utf8,
+    "gas_limit": pl.Int64,
+    "gas_used": pl.Int64,
+    "transaction_count": pl.Int64,
+    "base_fee_per_gas": pl.Int64
+}
+
+ethereum_transactions_schema = {
+    "data": pl.Utf8,
+    "hash": pl.Utf8,
+    "nonce": pl.Int64,
+    "transaction_index": pl.Int64,
+    "from_address": pl.Utf8,
+    "to_address": pl.Utf8,
+    "value": pl.float64,
+    "gas": pl.Int64,
+    "gas_price": pl.Int64,
+    "input": pl.Utf8,
+    "receipt_cumulative_gas_used": pl.Int64,
+    "receipt_gas_used": pl.Int64,
+    "receipt_contract_address": pl.Utf8,
+    "receipt_status": pl.Int64,
+    "block_timestamp": pl.Datetime,
+    "block_number": pl.Int64,
+    "block_hash": pl.Utf8,
+    "max_fee_per_gas": pl.Int64,
+    "max_priority_fee_per_gas": pl.Int64,
+    "transaction_type": pl.Int64,
+    "receipt_effective_gas_price": pl.Int64
+}
+
+ethereum_token_transfers_schema = {
+    "date": pl.Utf8,
+    "token_address": pl.Utf8,
+    "from_address": pl.Utf8,
+    "to_address": pl.Utf8,
+    "value": pl.Float64,
+    "transaction_hash": pl.Utf8,
+    "log_index": pl.Int64,
+    "block_timestamp": pl.Datetime,
+    "block_number": pl.Int64,
+    "block_hash": pl.Utf8
+}
