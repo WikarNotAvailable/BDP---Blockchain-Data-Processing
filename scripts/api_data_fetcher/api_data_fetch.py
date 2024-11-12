@@ -157,6 +157,11 @@ def process_ethereum_transactions(output: list, batch_number: dict, data_sizes: 
     block = get_latest_ethereum_block()
 
     if "result" in block and block["result"]["transactions"]:
+        block_timestamp = block["result"]["timestamp"]
+
+        for transaction in block["result"]["transactions"]:
+                transaction["timestamp"] = block_timestamp   
+                
         if len(block["result"]["transactions"]) + len(output) > BATCH_SIZE:
             try:
                 new_to_batch = block["result"]["transactions"][
@@ -257,6 +262,11 @@ def process_solana_transactions(output: list, batch_number: dict, data_sizes: di
 
     for block in blocks:
         if "result" in block:
+            block_timestamp = block["result"]["blockTime"]
+
+            for transaction in block["result"]["transactions"]:
+                transaction["timestamp"] = block_timestamp
+                
             if len(block["result"]["transactions"]) + len(output) > BATCH_SIZE:
                 try:
                     new_to_batch = block["result"]["transactions"][
@@ -285,11 +295,6 @@ def process_solana_transactions(output: list, batch_number: dict, data_sizes: di
                     batch_number["value"] += 1
                 except Exception as e:
                     log_error("Error while creating Solana DataFrame", e)
-
-            block_timestamp = block["result"]["blockTime"]
-
-            for transaction in block["result"]["transactions"]:
-                transaction["timestamp"] = block_timestamp
 
             output.extend(block["result"]["transactions"])
             logging.info(f"[Solana] Block hash: {block['result']['blockhash']}")
