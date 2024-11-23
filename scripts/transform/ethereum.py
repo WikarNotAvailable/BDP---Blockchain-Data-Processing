@@ -69,18 +69,6 @@ def download_last_7_parquets():
             print(f"Error downloading {file_name}: {e}")
 
 
-# transaction_files = [
-#     "eth-2024-11-22.snappy.parquet",
-#     "eth-2024-11-21.snappy.parquet",
-#     "eth-2024-11-20.snappy.parquet",
-#     "eth-2024-11-19.snappy.parquet",
-#     "eth-2024-11-18.snappy.parquet",
-#     "eth-2024-11-17.snappy.parquet",
-#     "eth-2024-11-16.snappy.parquet",
-# ]
-# transaction_files = [os.path.join(data_dir, file) for file in transaction_files]
-
-
 def filter_and_transform(file_key):
     df = spark.read.parquet(file_key)
 
