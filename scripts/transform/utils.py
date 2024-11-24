@@ -31,6 +31,7 @@ def download_last_7_parquets(s3, bucket_name, prefix, data_dir):
         print(f"Downloading {file_name}...")
         try:
             if os.path.exists(file_path):
+                transaction_files.append(file_path)
                 print(f"{file_name} already exists. Skipping...")
                 continue
 
