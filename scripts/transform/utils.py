@@ -12,7 +12,7 @@ def get_s3_objects(s3, bucket, prefix):
 
 def download_last_7_parquets(s3, bucket_name, prefix, data_dir):
     current_date = datetime.datetime.now(datetime.timezone.utc)
-    seven_days_ago = current_date - datetime.timedelta(days=1)
+    seven_days_ago = current_date - datetime.timedelta(days=7)
 
     transaction_files = []
 
