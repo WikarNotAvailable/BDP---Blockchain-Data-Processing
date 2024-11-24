@@ -1,7 +1,6 @@
-import os
 import datetime
-import time
 import boto3
+import shutil
 from botocore.client import Config
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
@@ -23,9 +22,7 @@ current_date = datetime.datetime.now(datetime.timezone.utc)
 bucket_name = "aws-public-blockchain"
 prefix = f"v1.0/eth/transactions/date={current_date.year}"
 
-home_dir = os.path.expanduser("~")
-data_dir = os.path.join(home_dir, "Desktop", "aws-data", "eth")
-
+data_dir = "data"
 output_file = "eth-data"
 fields_to_keep = [
     "block_timestamp",
@@ -95,7 +92,7 @@ if all_data.count() > 0:
         output_file, mode="overwrite", compression="snappy"
     )
 
-    [os.remove(file_path) for file_path in transaction_files]
+    shutil.rmtree(data_dir)
 
     print(f"Transformed data saved to {output_file}")
 else:
