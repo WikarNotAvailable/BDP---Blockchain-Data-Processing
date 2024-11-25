@@ -2,6 +2,7 @@ import datetime
 import boto3
 import shutil
 from botocore.client import Config
+from botocore import UNSIGNED
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 from utils import download_last_7_parquets
@@ -15,7 +16,7 @@ spark = (
     .getOrCreate()
 )
 
-s3 = boto3.client("s3", config=Config(signature_version=None))
+s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
 
 current_date = datetime.datetime.now(datetime.timezone.utc)
 
