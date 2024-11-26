@@ -3,16 +3,18 @@ import boto3
 import shutil
 from botocore.client import Config
 from botocore import UNSIGNED
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import col
 from utils import download_last_7_parquets
-from schemas import eth_input_schema, transaction_output_schema
+from schemas import eth_input_schema
+from functools import reduce
+import time
+
 
 spark = (
-    SparkSession.builder.appName("EthDataTransformation")
-    .config("spark.driver.memory", "8g")
-    .config("spark.executor.memory", "8g")
-    .config("spark.sql.shuffle.partitions", "200")
+    SparkSession.builder.appName("EthDataTransformation")    
+    .config("spark.sql.parquet.enableVectorizedReader", "true")
+    .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
     .getOrCreate()
 )
 
@@ -41,57 +43,38 @@ fields_to_keep = [
 def filter_and_transform(file_key):
     df = spark.read.schema(eth_input_schema).parquet(file_key)
 
-    # Filter fields
-    df = df.select(*fields_to_keep)
-
-    # Rename columns
     df = (
-        df.withColumnRenamed("hash", "transaction_hash")
+        df.select(*fields_to_keep)
+        .withColumnRenamed("hash", "transaction_hash")
         .withColumnRenamed("from_address", "sender_address")
         .withColumnRenamed("to_address", "receiver_address")
         .withColumnRenamed("value", "transferred_value")
+        .withColumn("transferred_value", col("transferred_value").cast("double") / 10**18)
+        .withColumn("gas_price", col("gas_price").cast("double") / 10**18)
+        .withColumn("fee", col("gas").cast("double") * col("gas_price"))
+        .drop("gas", "gas_price")
     )
-
-    # Convert gas_price and transferred_value from wei to ether
-    df = df.withColumn(
-        "gas_price", col("gas_price").cast("double") / 10**18
-    ).withColumn(
-        "transferred_value", col("transferred_value").cast("double") / 10**18
-    )
-
-    # Convert block_timestamp from timestamp to string
-    df = df.withColumn("block_timestamp", col("block_timestamp").cast("string"))
-
-    # Calculate fee in ether
-    df = df.withColumn("fee", (col("gas").cast("long") * col("gas_price")))
-
-    # Drop unnecessary columns
-    df = df.drop("gas", "gas_price")
 
     return df
 
 
-all_data = None
-
 transaction_files = download_last_7_parquets(s3, bucket_name, prefix, data_dir)
 
 # Transform data
+start_time = time.time()
+all_data_list = []
+all_data = None
+
 for file_key in transaction_files:
     print(f"Processing file: {file_key}")
     transformed_data = filter_and_transform(file_key)
+    all_data_list.append(transformed_data)
 
-    if all_data is None:
-        all_data = spark.createDataFrame(
-            transformed_data.rdd, transaction_output_schema
-        )
-    else:
-        all_data = all_data.union(transformed_data)
+if all_data_list:
+    all_data = reduce(DataFrame.union, all_data_list) # For large datasets it may be better to do incremental union in a loop
 
-# Save the transformed data to output file
-if all_data.count() > 0:
-    all_data.coalesce(1).write.parquet(
-        output_file, mode="overwrite", compression="snappy"
-    )
+if not all_data.isEmpty():
+    all_data.coalesce(1).write.parquet(output_file, mode="overwrite", compression="zstd")
 
     shutil.rmtree(data_dir)
 
@@ -99,5 +82,7 @@ if all_data.count() > 0:
 else:
     print("No data found within the specified time range.")
 
-# Stop the Spark session
+end_time = time.time()
+print(f"Time taken: {end_time - start_time} seconds")
+
 spark.stop()

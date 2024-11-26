@@ -36,7 +36,7 @@ eth_input_schema = StructType(
 
 transaction_output_schema = StructType(
     [
-        StructField("block_timestamp", StringType(), True),
+        StructField("block_timestamp", TimestampType(), True),
         StructField("block_number", LongType(), True),
         StructField("transaction_hash", StringType(), True),
         StructField("transaction_index", LongType(), True),
