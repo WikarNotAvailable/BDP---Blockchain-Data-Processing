@@ -36,13 +36,42 @@ eth_input_schema = StructType(
 
 transaction_output_schema = StructType(
     [
+        StructField("transaction_id", StringType(), True),
         StructField("block_timestamp", TimestampType(), True),
         StructField("block_number", LongType(), True),
         StructField("transaction_hash", StringType(), True),
         StructField("transaction_index", LongType(), True),
         StructField("sender_address", StringType(), True),
         StructField("receiver_address", StringType(), True),
-        StructField("transferred_value", DoubleType(), True),
+        StructField("total_transferred_value", DoubleType(), True),
+        StructField("sent_value", DoubleType(), True),
+        StructField("received_value", DoubleType(), True),
         StructField("fee", DoubleType(), True),
+        StructField("network_name", StringType(), True),
+    ]
+)
+
+aggregations_schema = StructType(
+    [
+        StructField("avg_sent_value", DoubleType(), True),
+        StructField("avg_received_value", DoubleType(), True),
+        StructField("total_sent_value", DoubleType(), True),
+        StructField("total_received_value", DoubleType(), True),
+        StructField("min_sent_value", DoubleType(), True),
+        StructField("min_received_value", DoubleType(), True),
+        StructField("max_sent_value", DoubleType(), True),
+        StructField("max_received_value", DoubleType(), True),
+        StructField("median_sent_value", DoubleType(), True),
+        StructField("median_received_value", DoubleType(), True),
+        StructField("mode_sent_value", DoubleType(), True),
+        StructField("mode_received_value", DoubleType(), True),
+        StructField("stddev_sent_value", DoubleType(), True),
+        StructField("stddev_received_value", DoubleType(), True),
+        StructField("num_sent_transactions", LongType(), True),
+        StructField("num_received_transactions", LongType(), True),
+        StructField("avg_fee_paid", DoubleType(), True),
+        StructField("total_fee_paid", DoubleType(), True),
+        StructField("min_fee_paid", DoubleType(), True),
+        StructField("max_fee_paid", DoubleType(), True),
     ]
 )
