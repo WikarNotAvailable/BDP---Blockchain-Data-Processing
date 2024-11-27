@@ -1,3 +1,15 @@
+######### API DATA FETCHER #########
+scripts/api_data_fetcher/.env
+scripts/api_data_fetcher/.venv
+
+# parquets
+scripts/api_data_fetcher/data_batches
+
+#logs
+scripts/api_data_fetcher/data_collection.log
+
+####################################
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
