@@ -1,6 +1,6 @@
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, lit
 from pyspark.sql import SparkSession, DataFrame
-from schemas import eth_input_schema
+from schemas import eth_schema
 
 
 def eth_transform(spark: SparkSession, file_name: str) -> DataFrame:
@@ -17,15 +17,18 @@ def eth_transform(spark: SparkSession, file_name: str) -> DataFrame:
     "gas",
     ]
 
-    df = spark.read.schema(eth_input_schema).parquet(file_name)
+    df = spark.read.schema(eth_schema).parquet(file_name)
 
     df = (
         df.select(*fields_to_keep)
         .withColumnRenamed("hash", "transaction_hash")
         .withColumnRenamed("from_address", "sender_address")
         .withColumnRenamed("to_address", "receiver_address")
-        .withColumnRenamed("value", "transferred_value")
-        .withColumn("transferred_value", col("transferred_value").cast("double") / 10**18)
+        .withColumnRenamed("value", "total_transferred_value")
+        .withColumn("sent_value", col("total_transferred_value"))
+        .withColumn("received_value", col("total_transferred_value"))
+        .withColumn("network_name", lit("ethereum"))
+        .withColumn("total_transferred_value", col("total_transferred_value").cast("double") / 10**18)
         .withColumn("gas_price", col("gas_price").cast("double") / 10**18)
         .withColumn("fee", col("gas").cast("double") * col("gas_price"))
         .drop("gas", "gas_price")

@@ -5,14 +5,14 @@ from pyspark.sql import SparkSession, DataFrame
 from utils import download_files, get_s3_objects
 
 
-def extract(s3: str, bucket_name: str, prefix:str, days: int = 7, temp_dir: str = "temp_data") -> list[str]:
+def extract(s3: str, bucket_name: str, prefix:str, days, save_dir: str) -> list[str]:
     current_date = datetime.datetime.now(datetime.timezone.utc)
     days_to_download = current_date - datetime.timedelta(days=days)
 
     objects = get_s3_objects(s3, bucket_name, prefix)
     recent_files = [obj for obj in objects if obj["LastModified"] > days_to_download]
     recent_files.sort(key=lambda x: x["LastModified"], reverse=True)
-    transaction_files_names = download_files(s3, bucket_name, recent_files, temp_dir)
+    transaction_files_names = download_files(s3, bucket_name, recent_files, save_dir)
 
     return transaction_files_names
 

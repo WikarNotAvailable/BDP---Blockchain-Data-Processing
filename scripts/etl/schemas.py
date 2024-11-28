@@ -9,7 +9,7 @@ from pyspark.sql.types import (
     ArrayType
 )
 
-eth_input_schema = StructType(
+eth_schema = StructType(
     [
         StructField("gas", LongType(), True),
         StructField("hash", StringType(), True),
@@ -64,7 +64,7 @@ btc_outputs_column_schema = ArrayType(StructType(
     ]
 ))
 
-btc_input_schema = StructType(
+btc_schema = StructType(
     [
         StructField("index", LongType(), False),
         StructField("hash", StringType(), False),
@@ -88,7 +88,7 @@ btc_input_schema = StructType(
     ]
 )
 
-transaction_output_schema = StructType(
+crypto_schema = StructType(
     [
         StructField("transaction_id", StringType(), False),
         StructField("block_timestamp", TimestampType(), False),
@@ -102,5 +102,30 @@ transaction_output_schema = StructType(
         StructField("sent_value", DoubleType(), True),
         StructField("received_value", DoubleType(), True),
         StructField("network_name", StringType(), True),
+    ]
+)
+
+aggregations_schema = StructType(
+    [
+        StructField("avg_sent_value", DoubleType(), True),
+        StructField("avg_received_value", DoubleType(), True),
+        StructField("total_sent_value", DoubleType(), True),
+        StructField("total_received_value", DoubleType(), True),
+        StructField("min_sent_value", DoubleType(), True),
+        StructField("min_received_value", DoubleType(), True),
+        StructField("max_sent_value", DoubleType(), True),
+        StructField("max_received_value", DoubleType(), True),
+        StructField("median_sent_value", DoubleType(), True),
+        StructField("median_received_value", DoubleType(), True),
+        StructField("mode_sent_value", DoubleType(), True),
+        StructField("mode_received_value", DoubleType(), True),
+        StructField("stddev_sent_value", DoubleType(), True),
+        StructField("stddev_received_value", DoubleType(), True),
+        StructField("num_sent_transactions", LongType(), True),
+        StructField("num_received_transactions", LongType(), True),
+        StructField("avg_fee_paid", DoubleType(), True),
+        StructField("total_fee_paid", DoubleType(), True),
+        StructField("min_fee_paid", DoubleType(), True),
+        StructField("max_fee_paid", DoubleType(), True),
     ]
 )
