@@ -1,3 +1,6 @@
+
+scripts/etl/results
+
 ######### API DATA FETCHER #########
 scripts/api_data_fetcher/.env
 scripts/api_data_fetcher/.venv
@@ -9,6 +12,7 @@ scripts/api_data_fetcher/data_batches
 scripts/api_data_fetcher/data_collection.log
 
 ####################################
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
