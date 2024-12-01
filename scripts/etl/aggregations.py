@@ -1,6 +1,6 @@
 from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit
 from pyspark.sql import SparkSession
-from schemas import crypto_schema
+from schemas import blockchain_schema
 
 def calculate_columns(df):
     sent_aggregations = (
@@ -77,9 +77,9 @@ spark = (
     .getOrCreate()
 )
 
-crypto_df = spark.read.schema(crypto_schema).parquet("results/crypto")
+blockchain_df = spark.read.schema(blockchain_schema).parquet("results/blockchain")
 
-aggregations_df = create_aggregations_df(crypto_df)
+aggregations_df = create_aggregations_df(blockchain_df)
 output_dir = f"results/aggregations"  
 aggregations_df.write.parquet(output_dir, mode="overwrite", compression="zstd")
 spark.stop()

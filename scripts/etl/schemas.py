@@ -88,7 +88,7 @@ btc_schema = StructType(
     ]
 )
 
-crypto_schema = StructType(
+blockchain_schema = StructType(
     [
         StructField("transaction_id", StringType(), False),
         StructField("block_timestamp", TimestampType(), False),
