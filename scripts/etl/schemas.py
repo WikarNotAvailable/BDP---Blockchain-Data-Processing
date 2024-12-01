@@ -88,7 +88,7 @@ btc_schema = StructType(
     ]
 )
 
-crypto_schema = StructType(
+transaction_schema = StructType(
     [
         StructField("transaction_id", StringType(), False),
         StructField("block_timestamp", TimestampType(), False),
@@ -99,6 +99,7 @@ crypto_schema = StructType(
         StructField("sender_address", StringType(), True),
         StructField("receiver_address", StringType(), True),
         StructField("total_transferred_value", DoubleType(), True),
+        StructField("total_input_value", DoubleType(), True),
         StructField("sent_value", DoubleType(), True),
         StructField("received_value", DoubleType(), True),
         StructField("network_name", StringType(), True),
