@@ -43,8 +43,8 @@ try:
         eth_df = perform_etl(spark, s3, bucket_name, eth_prefix, eth_transform, 7, temp_dir, 'eth')
         btc_df = perform_etl(spark, s3, bucket_name, btc_prefix, btc_transform, 7, temp_dir, 'btc')
 
-        blockchain_df = btc_df.unionByName(eth_df).withColumn("transaction_id", uuid_udf())
-        load(blockchain_df, 'blockchain') # Here we recalcualte both eth and btc df due to 'write'. We could use cache()/persist() to avoid it but it causes memory issues. We can also read eth and btc from parquets
+        transaction_df = btc_df.unionByName(eth_df).withColumn("transaction_id", uuid_udf())
+        load(transaction_df, 'transaction') # Here we recalcualte both eth and btc df due to 'write'. We could use cache()/persist() to avoid it but it causes memory issues. We can also read eth and btc from parquets
 
 except Exception as e:
     print(f"An error occurred: {e}")

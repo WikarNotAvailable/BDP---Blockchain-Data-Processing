@@ -77,9 +77,9 @@ spark = (
     .getOrCreate()
 )
 
-blockchain_df = spark.read.schema(transaction_schema).parquet("results/blockchain")
+transaction_df = spark.read.schema(transaction_schema).parquet("results/transaction")
 
-aggregations_df = create_aggregations_df(blockchain_df)
+aggregations_df = create_aggregations_df(transaction_df)
 output_dir = f"results/aggregations"  
 aggregations_df.write.parquet(output_dir, mode="overwrite", compression="zstd")
 spark.stop()
