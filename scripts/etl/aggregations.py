@@ -71,6 +71,9 @@ spark = (
     SparkSession.builder.appName("EthDataTransformation")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
+    .config("spark.executor.memory", "4g")  # Increase executor memory
+    .config("spark.driver.memory", "2g")    # Increase driver memory
+    .config("spark.executor.cores", "4")    # Optionally, adjust executor cores
     .getOrCreate()
 )
 
