@@ -68,7 +68,7 @@ def create_aggregations_df(df):
     return df_btc_aggregations.unionByName(df_eth_aggregations).na.fill(0)
 
 spark = (
-    SparkSession.builder.appName("EthDataTransformation")    
+    SparkSession.builder.appName("DataAggregations")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
     .config("spark.executor.memory", "4g")  # Increase executor memory

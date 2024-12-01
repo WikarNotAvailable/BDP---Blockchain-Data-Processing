@@ -7,7 +7,9 @@ import tempfile
 from bitcoin import btc_transform
 from ethereum import eth_transform
 from etl import extract, load, transform
-
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
+import uuid
 
 def perform_etl(spark, s3, bucket_name, prefix, transform_func, days, temp_dir, label):
     transactions = extract(s3, bucket_name, prefix, days, temp_dir)
@@ -15,13 +17,20 @@ def perform_etl(spark, s3, bucket_name, prefix, transform_func, days, temp_dir, 
     load(df, label)
     return df
 
+def generate_uuid():
+    return str(uuid.uuid4())
 
 spark = (
-    SparkSession.builder.appName("EthDataTransformation")    
+    SparkSession.builder.appName("DataETL")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
+    .config("spark.executor.memory", "4g")  # Increase executor memory
+    .config("spark.driver.memory", "2g")    # Increase driver memory
+    .config("spark.executor.cores", "4")    # Optionally, adjust executor cores
     .getOrCreate()
 )
+
+uuid_udf = udf(generate_uuid, StringType())
 
 current_date = datetime.datetime.now(datetime.timezone.utc)
 s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
@@ -34,7 +43,7 @@ try:
         eth_df = perform_etl(spark, s3, bucket_name, eth_prefix, eth_transform, 7, temp_dir, 'eth')
         btc_df = perform_etl(spark, s3, bucket_name, btc_prefix, btc_transform, 7, temp_dir, 'btc')
 
-        blockchain_df = btc_df.unionByName(eth_df)
+        blockchain_df = btc_df.unionByName(eth_df).withColumn("transaction_id", uuid_udf())
         load(blockchain_df, 'blockchain') # Here we recalcualte both eth and btc df due to 'write'. We could use cache()/persist() to avoid it but it causes memory issues. We can also read eth and btc from parquets
 
 except Exception as e:
