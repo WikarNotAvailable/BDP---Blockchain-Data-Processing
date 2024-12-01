@@ -1,8 +1,8 @@
 from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit
 from pyspark.sql import SparkSession
-from schemas import blockchain_schema
+from schemas import transaction_schema
 
-def calculate_columns(df):
+def calculate_aggregations(df):
     sent_aggregations = (
         df.groupBy("sender_address")
         .agg(
@@ -62,8 +62,8 @@ def create_aggregations_df(df):
     )
     df_btc = df_btc_send.unionByName(df_btc_receive)
     
-    df_btc_aggregations = calculate_columns(df_btc)
-    df_eth_aggregations = calculate_columns(df_eth)
+    df_btc_aggregations = calculate_aggregations(df_btc)
+    df_eth_aggregations = calculate_aggregations(df_eth)
     
     return df_btc_aggregations.unionByName(df_eth_aggregations).na.fill(0)
 
@@ -77,7 +77,7 @@ spark = (
     .getOrCreate()
 )
 
-blockchain_df = spark.read.schema(blockchain_schema).parquet("results/blockchain")
+blockchain_df = spark.read.schema(transaction_schema).parquet("results/blockchain")
 
 aggregations_df = create_aggregations_df(blockchain_df)
 output_dir = f"results/aggregations"  
