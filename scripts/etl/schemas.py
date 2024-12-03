@@ -110,23 +110,64 @@ aggregations_schema = StructType(
     [
         StructField("avg_sent_value", DoubleType(), True),
         StructField("avg_received_value", DoubleType(), True),
-        StructField("total_sent_value", DoubleType(), True),
-        StructField("total_received_value", DoubleType(), True),
+        StructField("avg_total_value_for_sender", DoubleType(), True),
+        StructField("avg_total_value_for_receiver", DoubleType(), True),
+
+        StructField("sum_sent_value", DoubleType(), True),
+        StructField("sum_received_value", DoubleType(), True),
+        StructField("sum_total_value_for_sender", DoubleType(), True),
+        StructField("sum_total_value_for_receiver", DoubleType(), True),
+
         StructField("min_sent_value", DoubleType(), True),
         StructField("min_received_value", DoubleType(), True),
+        StructField("min_total_value_for_sender", DoubleType(), True),
+        StructField("min_total_value_for_receiver", DoubleType(), True),
+
         StructField("max_sent_value", DoubleType(), True),
         StructField("max_received_value", DoubleType(), True),
+        StructField("max_total_value_for_sender", DoubleType(), True),
+        StructField("max_total_value_for_receiver", DoubleType(), True),
+
         StructField("median_sent_value", DoubleType(), True),
         StructField("median_received_value", DoubleType(), True),
+        StructField("median_total_value_for_sender", DoubleType(), True),
+        StructField("median_total_value_for_receiver", DoubleType(), True),
+
         StructField("mode_sent_value", DoubleType(), True),
         StructField("mode_received_value", DoubleType(), True),
+        StructField("mode_total_value_for_sender", DoubleType(), True),
+        StructField("mode_total_value_for_receiver", DoubleType(), True),
+
         StructField("stddev_sent_value", DoubleType(), True),
         StructField("stddev_received_value", DoubleType(), True),
+        StructField("stddev_total_value_for_sender", DoubleType(), True),
+        StructField("stddev_total_value_for_receiver", DoubleType(), True),
+
         StructField("num_sent_transactions", LongType(), True),
+        StructField("num_sent_transactions_to_unique", LongType(), True),
         StructField("num_received_transactions", LongType(), True),
+        StructField("num_received_transactions_from_unique", LongType(), True),
+
+        StructField("avg_time_between_sent_transactions", LongType(), True),
+        StructField("avg_time_between_received_transactions", LongType(), True),
+
+        StructField("avg_outgoing_speed_count", LongType(), True),
+        StructField("avg_incoming_speed_count", LongType(), True),
+        StructField("avg_outgoing_speed_value", LongType(), True),
+        StructField("avg_incoming_speed_value", LongType(), True),
+
+        StructField("avg_outgoing_acceleration_count", LongType(), True),
+        StructField("avg_incoming_acceleration_value", LongType(), True),
+        StructField("avg_outgoing_acceleration_count", LongType(), True),
+        StructField("avg_incoming_acceleration_value", LongType(), True),
+
         StructField("avg_fee_paid", DoubleType(), True),
         StructField("total_fee_paid", DoubleType(), True),
         StructField("min_fee_paid", DoubleType(), True),
         StructField("max_fee_paid", DoubleType(), True),
+
+        StructField("activity_duration", LongType(), True),
+        StructField("first_transaction_timestamp", TimestampType(), True),
+        StructField("last_transaction_timestamp", TimestampType(), True),
     ]
 )
