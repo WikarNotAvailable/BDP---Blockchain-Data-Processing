@@ -89,37 +89,6 @@ def calculate_aggregations(df):
     
     return sent_aggregations.join(received_aggregations, "address", "outer").join(active_duration_df, "address", "left")
 
-    
-
-def create_aggregations_df(df):
-    df_eth = df.where(col("network_name") == "ethereum")
-    
-    df_btc = df.where(col("network_name") == "bitcoin")
-    df_btc_send = (
-        df_btc.groupBy("sender_address", "transaction_hash")
-        .agg(mean("sent_value").alias("sent_value"),
-             mean("fee").alias("fee"),
-             first("total_transferred_value").alias("total_transferred_value"),
-             first("block_timestamp").alias("block_timestamp"))
-            .withColumn("receiver_address", lit(None))
-            .withColumn("received_value", lit(None))
-    )
-    df_btc_receive = (
-        df_btc.groupBy("receiver_address", "transaction_hash")
-        .agg(mean("received_value").alias("received_value"),
-             mean("fee").alias("fee"),
-             first("total_transferred_value").alias("total_transferred_value"),
-             first("block_timestamp").alias("block_timestamp"))
-            .withColumn("sender_address", lit(None))
-            .withColumn("sent_value", lit(None))
-    )
-    df_btc = df_btc_send.unionByName(df_btc_receive)
-    
-    df_btc_aggregations = calculate_aggregations(df_btc)
-    df_eth_aggregations = calculate_aggregations(df_eth)
-
-    return df_btc_aggregations.unionByName(df_eth_aggregations).na.fill(0)
-
 def calculate_active_duration(df) -> DataFrame:
     min_max_timestamps = (
         df.select(
@@ -141,19 +110,75 @@ def calculate_active_duration(df) -> DataFrame:
 
     return min_max_timestamps.withColumn("activity_duration", unix_timestamp("last_transaction_timestamp") - unix_timestamp("first_transaction_timestamp"))
 
+
+def calculate_unique_degrees(df):
+    out_degrees = (
+        df.groupBy("sender_address")
+        .agg(count_distinct("receiver_address").alias("unique_out_degree"))
+        .withColumnRenamed("sender_address", "address")
+        )
+    
+    in_degrees = (
+        df.groupBy("receiver_address")
+        .agg(count_distinct("sender_address").alias("unique_in_degree"))
+        .withColumnRenamed("receiver_address", "address")
+    )
+
+    return out_degrees.join(in_degrees, "address", "outer").na.fill(0)
+
+def preprocess_btc_df(df):
+
+    df_btc_send = (
+        df_btc.groupBy("sender_address", "transaction_hash")
+        .agg(mean("sent_value").alias("sent_value"),
+             mean("fee").alias("fee"),
+             first("total_transferred_value").alias("total_transferred_value"),
+             first("block_timestamp").alias("block_timestamp"))
+            .withColumn("receiver_address", lit(None))
+            .withColumn("received_value", lit(None))
+    )
+
+    df_btc_receive = (
+        df_btc.groupBy("receiver_address", "transaction_hash")
+        .agg(mean("received_value").alias("received_value"),
+             mean("fee").alias("fee"),
+             first("total_transferred_value").alias("total_transferred_value"),
+             first("block_timestamp").alias("block_timestamp"))
+            .withColumn("sender_address", lit(None))
+            .withColumn("sent_value", lit(None))
+    )
+
+    return df_btc_send.unionByName(df_btc_receive)
+    
+    
 spark = (
     SparkSession.builder.appName("DataAggregations")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
-    .config("spark.executor.memory", "4g")  # Increase executor memory
-    .config("spark.driver.memory", "2g")    # Increase driver memory
+    .config("spark.executor.memory", "8g")  # Increase executor memory
+    .config("spark.driver.memory", "8g")    # Increase driver memory
     .config("spark.executor.cores", "4")    # Optionally, adjust executor cores
+    .config("spark.jars.packages", "graphframes:graphframes:0.8.2-spark3.0-s_2.12")
     .getOrCreate()
 )
 
 transaction_df = spark.read.schema(transaction_schema).parquet("results/transaction")
+unique_degrees_df = calculate_unique_degrees(transaction_df)
 
-aggregations_df = create_aggregations_df(transaction_df)
+df_eth = transaction_df.where(col("network_name") == "ethereum")
+df_btc = transaction_df.where(col("network_name") == "bitcoin")
+
+df_btc = preprocess_btc_df(transaction_df)
+
+df_btc_aggregations = calculate_aggregations(df_btc)
+df_eth_aggregations = calculate_aggregations(df_eth)
+
+aggregations_df = df_btc_aggregations.unionByName(df_eth_aggregations)
+aggregations_df = aggregations_df.join(unique_degrees_df, "address", "outer").na.fill(0)
+
 output_dir = f"results/aggregations"  
 aggregations_df.coalesce(1).write.parquet(output_dir, mode="overwrite", compression="zstd")
+
+
 spark.stop()
+
