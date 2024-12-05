@@ -1,7 +1,9 @@
-from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit, count_distinct, unix_timestamp, lag, first, when
+from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit, count_distinct, unix_timestamp, lag, first, when, expr
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.window import Window
 from schemas import transaction_schema
+from graphframes import GraphFrame
+from pyspark import StorageLevel
 
 def calculate_aggregations(df):
     sender_window = Window.partitionBy("sender_address").orderBy("block_timestamp")
@@ -64,13 +66,13 @@ def calculate_aggregations(df):
             mode("received_value").alias("mode_received_transactions"),
             stddev("received_value").alias("stddev_received_transactions"),
 
-            mean("received_value").alias("avg_total_value_for_receiver"),
-            sum("received_value").alias("sum_total_value_for_receiver"),
-            min("received_value").alias("min_total_value_for_receiver"),
-            max("received_value").alias("max_total_value_for_receiver"),
-            median("received_value").alias("median_total_value_for_receiver"),
-            mode("received_value").alias("mode_total_value_for_receiver"),
-            stddev("received_value").alias("stddev_total_value_for_receiver"),
+            mean("total_transferred_value").alias("avg_total_value_for_receiver"),
+            sum("total_transferred_value").alias("sum_total_value_for_receiver"),
+            min("total_transferred_value").alias("min_total_value_for_receiver"),
+            max("total_transferred_value").alias("max_total_value_for_receiver"),
+            median("total_transferred_value").alias("median_total_value_for_receiver"),
+            mode("total_transferred_value").alias("mode_total_value_for_receiver"),
+            stddev("total_transferred_value").alias("stddev_total_value_for_receiver"),
 
             count("receiver_address").alias("num_received_transactions"),
             count_distinct("sender_address").alias("num_received_transactions_from_unique"),
@@ -129,7 +131,7 @@ def calculate_unique_degrees(df):
 def preprocess_btc_df(df):
 
     df_btc_send = (
-        df_btc.groupBy("sender_address", "transaction_hash")
+        df.groupBy("sender_address", "transaction_hash")
         .agg(mean("sent_value").alias("sent_value"),
              mean("fee").alias("fee"),
              first("total_transferred_value").alias("total_transferred_value"),
@@ -139,7 +141,7 @@ def preprocess_btc_df(df):
     )
 
     df_btc_receive = (
-        df_btc.groupBy("receiver_address", "transaction_hash")
+        df.groupBy("receiver_address", "transaction_hash")
         .agg(mean("received_value").alias("received_value"),
              mean("fee").alias("fee"),
              first("total_transferred_value").alias("total_transferred_value"),
@@ -149,7 +151,7 @@ def preprocess_btc_df(df):
     )
 
     return df_btc_send.unionByName(df_btc_receive)
-    
+
     
 spark = (
     SparkSession.builder.appName("DataAggregations")    
@@ -158,11 +160,12 @@ spark = (
     .config("spark.executor.memory", "8g")  # Increase executor memory
     .config("spark.driver.memory", "8g")    # Increase driver memory
     .config("spark.executor.cores", "4")    # Optionally, adjust executor cores
-    .config("spark.jars.packages", "graphframes:graphframes:0.8.2-spark3.0-s_2.12")
+    #.config("spark.local.dir", "/mnt/d/spark-temp")
     .getOrCreate()
 )
 
 transaction_df = spark.read.schema(transaction_schema).parquet("results/transaction")
+
 unique_degrees_df = calculate_unique_degrees(transaction_df)
 
 df_eth = transaction_df.where(col("network_name") == "ethereum")
@@ -179,6 +182,4 @@ aggregations_df = aggregations_df.join(unique_degrees_df, "address", "outer").na
 output_dir = f"results/aggregations"  
 aggregations_df.coalesce(1).write.parquet(output_dir, mode="overwrite", compression="zstd")
 
-
 spark.stop()
-
