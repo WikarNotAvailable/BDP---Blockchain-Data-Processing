@@ -21,9 +21,9 @@ def calculate_aggregations(df):
             sum("sent_value").alias("sum_sent_value"),
             min("sent_value").alias("min_sent_value"),
             max("sent_value").alias("max_sent_value"),
-            median("sent_value").alias("median_sent_transactions"),
-            mode("sent_value").alias("mode_sent_transactions"),
-            stddev("sent_value").alias("stddev_sent_transactions"),
+            median("sent_value").alias("median_sent_value"),
+            mode("sent_value").alias("mode_sent_value"),
+            stddev("sent_value").alias("stddev_sent_value"),
             
             mean("total_transferred_value").alias("avg_total_value_for_sender"),
             sum("total_transferred_value").alias("sum_total_value_for_sender"),
@@ -60,9 +60,9 @@ def calculate_aggregations(df):
             sum("received_value").alias("sum_received_value"),
             min("received_value").alias("min_received_value"),
             max("received_value").alias("max_received_value"),
-            median("received_value").alias("median_received_transactions"),
-            mode("received_value").alias("mode_received_transactions"),
-            stddev("received_value").alias("stddev_received_transactions"),
+            median("received_value").alias("median_received_value"),
+            mode("received_value").alias("mode_received_value"),
+            stddev("received_value").alias("stddev_received_value"),
 
             mean("total_transferred_value").alias("avg_total_value_for_receiver"),
             sum("total_transferred_value").alias("sum_total_value_for_receiver"),
@@ -154,12 +154,15 @@ spark = (
     SparkSession.builder.appName("DataAggregations")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
-    .config("spark.executor.memory", "4g")  # Increase executor memory
-    .config("spark.driver.memory", "4g")    # Increase driver memory
+    .config("spark.executor.memory", "16g")  # Increase executor memory
+    .config("spark.driver.memory", "16g")    # Increase driver memory
+    #.config("spark.local.dir", "/mnt/d/spark-temp")       # Change the temp directory
     .getOrCreate()
 )
 
-transaction_df = spark.read.schema(transaction_schema).parquet("results/transaction")
+
+cols_to_drop = ["transaction_id", "block_number", "transaction_index"]
+transaction_df = spark.read.schema(transaction_schema).parquet("results/transaction").drop(*cols_to_drop)
 
 unique_degrees_df = calculate_unique_degrees(transaction_df)
 
