@@ -34,7 +34,6 @@ def calculate_aggregations(df):
             stddev("total_transferred_value").alias("stddev_total_value_for_sender"),
 
             count("sender_address").alias("num_sent_transactions"),
-            count_distinct("receiver_address").alias("num_sent_transactions_to_unique"),
             mean("sender_time_diff").alias("avg_time_between_sent_transactions"),
 
             sum("sender_time_diff").alias("total_outgoing_time"),
@@ -73,7 +72,6 @@ def calculate_aggregations(df):
             stddev("total_transferred_value").alias("stddev_total_value_for_receiver"),
 
             count("receiver_address").alias("num_received_transactions"),
-            count_distinct("sender_address").alias("num_received_transactions_from_unique"),
             mean("receiver_time_diff").alias("avg_time_between_received_transactions"),
 
             sum("receiver_time_diff").alias("total_incoming_time")
@@ -169,10 +167,13 @@ unique_degrees_df = calculate_unique_degrees(transaction_df)
 df_eth = transaction_df.where(col("network_name") == "ethereum")
 df_btc = transaction_df.where(col("network_name") == "bitcoin")
 
-df_btc = preprocess_btc_df(transaction_df)
+df_btc = preprocess_btc_df(df_btc)
 
 df_btc_aggregations = calculate_aggregations(df_btc)
 df_eth_aggregations = calculate_aggregations(df_eth)
+
+df_btc_aggregations = df_btc_aggregations.withColumn("network_name", lit("bitcoin"))
+df_eth_aggregations = df_eth_aggregations.withColumn("network_name", lit("ethereum"))
 
 aggregations_df = df_btc_aggregations.unionByName(df_eth_aggregations)
 aggregations_df = aggregations_df.join(unique_degrees_df, "address", "outer").na.fill(0)
