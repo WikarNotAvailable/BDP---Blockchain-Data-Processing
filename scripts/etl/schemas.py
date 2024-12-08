@@ -144,9 +144,7 @@ aggregations_schema = StructType(
         StructField("stddev_total_value_for_receiver", DoubleType(), True),
 
         StructField("num_sent_transactions", LongType(), True),
-        StructField("num_sent_transactions_to_unique", LongType(), True),
         StructField("num_received_transactions", LongType(), True),
-        StructField("num_received_transactions_from_unique", LongType(), True),
 
         StructField("avg_time_between_sent_transactions", LongType(), True),
         StructField("avg_time_between_received_transactions", LongType(), True),
@@ -169,5 +167,8 @@ aggregations_schema = StructType(
         StructField("activity_duration", LongType(), True),
         StructField("first_transaction_timestamp", TimestampType(), True),
         StructField("last_transaction_timestamp", TimestampType(), True),
+
+        StructField("unique_out_degree", DoubleType(), True),
+        StructField("unique_in_degree", DoubleType(), True)
     ]
 )
