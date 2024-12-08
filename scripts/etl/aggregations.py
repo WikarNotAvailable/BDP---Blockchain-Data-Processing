@@ -1,9 +1,7 @@
-from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit, count_distinct, unix_timestamp, lag, first, when, expr
+from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit, count_distinct, unix_timestamp, lag, first, when
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.window import Window
 from schemas import transaction_schema
-from graphframes import GraphFrame
-from pyspark import StorageLevel
 
 def calculate_aggregations(df):
     sender_window = Window.partitionBy("sender_address").orderBy("block_timestamp")
@@ -112,7 +110,6 @@ def calculate_active_duration(df) -> DataFrame:
 
     return min_max_timestamps.withColumn("activity_duration", unix_timestamp("last_transaction_timestamp") - unix_timestamp("first_transaction_timestamp"))
 
-
 def calculate_unique_degrees(df):
     out_degrees = (
         df.groupBy("sender_address")
@@ -157,10 +154,8 @@ spark = (
     SparkSession.builder.appName("DataAggregations")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
-    .config("spark.executor.memory", "8g")  # Increase executor memory
-    .config("spark.driver.memory", "8g")    # Increase driver memory
-    .config("spark.executor.cores", "4")    # Optionally, adjust executor cores
-    #.config("spark.local.dir", "/mnt/d/spark-temp")
+    .config("spark.executor.memory", "4g")  # Increase executor memory
+    .config("spark.driver.memory", "4g")    # Increase driver memory
     .getOrCreate()
 )
 
