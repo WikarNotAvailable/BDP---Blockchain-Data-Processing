@@ -17,7 +17,7 @@ def eth_transform(spark: SparkSession, file_name: str) -> DataFrame:
     "gas",
     ]
 
-    df = spark.read.schema(eth_schema).parquet(file_name)
+    df = spark.read.schema(eth_schema).parquet(file_name).filter(col("value") > 0)
 
     df = (
         df.select(*fields_to_keep)
