@@ -21,9 +21,9 @@ def calculate_aggregations(df):
             sum("sent_value").alias("sum_sent_value"),
             min("sent_value").alias("min_sent_value"),
             max("sent_value").alias("max_sent_value"),
-            median("sent_value").alias("median_sent_transactions"),
-            mode("sent_value").alias("mode_sent_transactions"),
-            stddev("sent_value").alias("stddev_sent_transactions"),
+            median("sent_value").alias("median_sent_value"),
+            mode("sent_value").alias("mode_sent_value"),
+            stddev("sent_value").alias("stddev_sent_value"),
             
             mean("total_transferred_value").alias("avg_total_value_for_sender"),
             sum("total_transferred_value").alias("sum_total_value_for_sender"),
@@ -34,7 +34,6 @@ def calculate_aggregations(df):
             stddev("total_transferred_value").alias("stddev_total_value_for_sender"),
 
             count("sender_address").alias("num_sent_transactions"),
-            count_distinct("receiver_address").alias("num_sent_transactions_to_unique"),
             mean("sender_time_diff").alias("avg_time_between_sent_transactions"),
 
             sum("sender_time_diff").alias("total_outgoing_time"),
@@ -60,9 +59,9 @@ def calculate_aggregations(df):
             sum("received_value").alias("sum_received_value"),
             min("received_value").alias("min_received_value"),
             max("received_value").alias("max_received_value"),
-            median("received_value").alias("median_received_transactions"),
-            mode("received_value").alias("mode_received_transactions"),
-            stddev("received_value").alias("stddev_received_transactions"),
+            median("received_value").alias("median_received_value"),
+            mode("received_value").alias("mode_received_value"),
+            stddev("received_value").alias("stddev_received_value"),
 
             mean("total_transferred_value").alias("avg_total_value_for_receiver"),
             sum("total_transferred_value").alias("sum_total_value_for_receiver"),
@@ -73,7 +72,6 @@ def calculate_aggregations(df):
             stddev("total_transferred_value").alias("stddev_total_value_for_receiver"),
 
             count("receiver_address").alias("num_received_transactions"),
-            count_distinct("sender_address").alias("num_received_transactions_from_unique"),
             mean("receiver_time_diff").alias("avg_time_between_received_transactions"),
 
             sum("receiver_time_diff").alias("total_incoming_time")
@@ -154,22 +152,28 @@ spark = (
     SparkSession.builder.appName("DataAggregations")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
-    .config("spark.executor.memory", "4g")  # Increase executor memory
-    .config("spark.driver.memory", "4g")    # Increase driver memory
+    .config("spark.executor.memory", "8g")
+    .config("spark.driver.memory", "8g")
+    # .config("spark.local.dir", "/mnt/d/spark-temp") # Change the temp directory
     .getOrCreate()
 )
 
-transaction_df = spark.read.schema(transaction_schema).parquet("results/transaction")
+
+cols_to_drop = ["transaction_id", "block_number", "transaction_index"]
+transaction_df = spark.read.schema(transaction_schema).parquet("results/transaction").drop(*cols_to_drop)
 
 unique_degrees_df = calculate_unique_degrees(transaction_df)
 
 df_eth = transaction_df.where(col("network_name") == "ethereum")
 df_btc = transaction_df.where(col("network_name") == "bitcoin")
 
-df_btc = preprocess_btc_df(transaction_df)
+df_btc = preprocess_btc_df(df_btc)
 
 df_btc_aggregations = calculate_aggregations(df_btc)
 df_eth_aggregations = calculate_aggregations(df_eth)
+
+df_btc_aggregations = df_btc_aggregations.withColumn("network_name", lit("bitcoin"))
+df_eth_aggregations = df_eth_aggregations.withColumn("network_name", lit("ethereum"))
 
 aggregations_df = df_btc_aggregations.unionByName(df_eth_aggregations)
 aggregations_df = aggregations_df.join(unique_degrees_df, "address", "outer").na.fill(0)

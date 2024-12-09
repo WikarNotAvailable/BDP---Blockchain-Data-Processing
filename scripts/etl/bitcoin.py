@@ -29,6 +29,7 @@ def btc_transform(spark: SparkSession, file_name: str):
         .withColumn("receiver_address", col("output.address"))
         .withColumn("sent_value", col("input.value"))
         .withColumn("received_value", col("output.value"))
+        .filter(col("total_transferred_value") > 0)
         .drop("output", 'input')
     )
 
