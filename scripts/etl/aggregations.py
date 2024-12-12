@@ -1,7 +1,7 @@
 from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit, count_distinct, unix_timestamp, lag, first, when
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.window import Window
-from schemas import transaction_schema
+from scripts.shared.schemas import transaction_schema
 
 def calculate_aggregations(df):
     sender_window = Window.partitionBy("sender_address").orderBy("block_timestamp")
@@ -152,8 +152,8 @@ spark = (
     SparkSession.builder.appName("DataAggregations")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
-    .config("spark.executor.memory", "8g")
-    .config("spark.driver.memory", "8g")
+    .config("spark.executor.memory", "6g")
+    .config("spark.driver.memory", "2g")
     # .config("spark.local.dir", "/mnt/d/spark-temp") # Change the temp directory
     .getOrCreate()
 )
