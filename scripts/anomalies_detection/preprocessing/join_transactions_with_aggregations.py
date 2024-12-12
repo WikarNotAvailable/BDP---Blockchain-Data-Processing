@@ -70,8 +70,13 @@ common_fields = [
     "first_transaction_timestamp",
     "last_transaction_timestamp"
 ]
-transactions_df = spark.read.schema(transaction_schema).parquet("results/transaction")
-aggregations_df = spark.read.schema(aggregations_schema).parquet("results/aggregations")
+
+transaction_dir = "results/transaction" #results/transaction or benchmark/eth
+aggregations_dir = "results/aggregations" #results/aggregations or benchmark/aggregations
+output_dir = "results/joined_transactions_with_aggregations" #results/joined_transactions_with_aggregations or benchmark/joined_transactions_with_aggregations
+
+transactions_df = spark.read.schema(transaction_schema).parquet(transaction_dir)
+aggregations_df = spark.read.schema(aggregations_schema).parquet(aggregations_dir)
 
 sender_aggregations = aggregations_df.select(
     sender_fields + [col(field).alias(f"{field}_for_sender") for field in common_fields]
@@ -92,7 +97,9 @@ final_df = transactions_with_sender.join(
 ).drop("address_for_receiver")
 
 final_df.coalesce(1).write.parquet(
-    "results/joined_transactions_with_aggregations", mode="overwrite", compression="zstd"
+    output_dir, 
+    mode="overwrite", 
+    compression="zstd"
 )
 
 spark.stop()
