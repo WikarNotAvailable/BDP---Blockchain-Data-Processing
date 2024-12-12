@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lit, explode
-from schemas import btc_schema
+from scripts.shared.schemas import btc_schema
 
 
 def btc_transform(spark: SparkSession, file_name: str):
