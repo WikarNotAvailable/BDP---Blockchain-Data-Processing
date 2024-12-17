@@ -1,4 +1,4 @@
-from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit, count_distinct, unix_timestamp, lag, first, when
+from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit, count_distinct, unix_timestamp, lag, first, when, monotonically_increasing_id
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.window import Window
 from scripts.shared.schemas import transaction_schema
@@ -158,9 +158,11 @@ spark = (
     .getOrCreate()
 )
 
+source_dir = "data/historical/etl/transactions" #data/benchmark/etl/transactions or data/historical/etl/transactions
+output_dir = "data/historical/aggregations" #data/benchmark/aggregations or data/historical/aggregations
 
 cols_to_drop = ["transaction_id", "block_number", "transaction_index"]
-transaction_df = spark.read.schema(transaction_schema).parquet("results/transaction").drop(*cols_to_drop)
+transaction_df = spark.read.schema(transaction_schema).parquet(source_dir).drop(*cols_to_drop)
 
 unique_degrees_df = calculate_unique_degrees(transaction_df)
 
@@ -178,7 +180,6 @@ df_eth_aggregations = df_eth_aggregations.withColumn("network_name", lit("ethere
 aggregations_df = df_btc_aggregations.unionByName(df_eth_aggregations)
 aggregations_df = aggregations_df.join(unique_degrees_df, "address", "outer").na.fill(0)
 
-output_dir = f"results/aggregations"  
 aggregations_df.coalesce(1).write.parquet(output_dir, mode="overwrite", compression="zstd")
 
 spark.stop()
