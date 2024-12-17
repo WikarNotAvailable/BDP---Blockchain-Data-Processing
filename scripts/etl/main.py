@@ -22,8 +22,6 @@ spark = (
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
     .config("spark.executor.memory", "6g")
     .config("spark.driver.memory", "2g")
-    .config("spark.executor.memory", "6g")
-    .config("spark.driver.memory", "2g")
     #.config("spark.local.dir", "/mnt/d/spark-temp")  # Change local dir to avoid permission issues
     .getOrCreate()
 )
@@ -35,7 +33,6 @@ bucket_name = "aws-public-blockchain"
 eth_prefix = "v1.0/eth/transactions/"
 btc_prefix = "v1.0/btc/transactions/"
 start_date = "2024-11-25"
-end_date = "2024-12-01"
 end_date = "2024-12-01"
 
 try:
