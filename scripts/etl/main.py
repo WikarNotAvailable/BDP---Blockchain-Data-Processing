@@ -6,7 +6,7 @@ from pyspark.sql import SparkSession
 import tempfile
 from components.bitcoin import btc_transform
 from components.ethereum import eth_transform
-from etl import extract, load, transform
+from components.etl import extract, load, transform
 from pyspark.sql.functions import expr
 
 
@@ -41,7 +41,7 @@ try:
         btc_df = perform_etl(spark, s3, bucket_name, btc_prefix, btc_transform, start_date, end_date, temp_dir, 'btc')
 
         transaction_df = btc_df.unionByName(eth_df).withColumn("transaction_id", expr("uuid()"))
-        load(transaction_df, 'transaction') # Here we recalcualte both eth and btc df due to 'write'. We could use cache()/persist() to avoid it but it causes memory issues. We can also read eth and btc from parquets
+        load(transaction_df, 'transactions') # Here we recalcualte both eth and btc df due to 'write'. We could use cache()/persist() to avoid it but it causes memory issues. We can also read eth and btc from parquets
 
 except Exception as e:
     print(f"An error occurred: {e}")

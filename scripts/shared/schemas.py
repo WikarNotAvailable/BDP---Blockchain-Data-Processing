@@ -6,7 +6,8 @@ from pyspark.sql.types import (
     TimestampType,
     DoubleType,
     BooleanType,
-    ArrayType
+    ArrayType,
+    FloatType
 )
 
 eth_schema = StructType(
@@ -176,108 +177,281 @@ aggregations_schema = StructType(
     ]
 )
 
-joined_schema = StructType(
+transaction_scaled_schema = StructType(
     [
         StructField("transaction_id", StringType(), False),
-        StructField("block_timestamp", TimestampType(), False),
-        StructField("block_number", LongType(), False),
+        StructField("block_timestamp", FloatType(), False),
+        StructField("block_number", FloatType(), False),
         StructField("transaction_hash", StringType(), False),
-        StructField("transaction_index", LongType(), False),
-        StructField("fee", DoubleType(), True),
+        StructField("transaction_index", FloatType(), False),
+        StructField("fee", FloatType(), True),
         StructField("sender_address", StringType(), True),
         StructField("receiver_address", StringType(), True),
-        StructField("total_transferred_value", DoubleType(), True),
-        StructField("total_input_value", DoubleType(), True),
-        StructField("sent_value", DoubleType(), True),
-        StructField("received_value", DoubleType(), True),
+        StructField("total_transferred_value", FloatType(), True),
+        StructField("total_input_value", FloatType(), True),
+        StructField("sent_value", FloatType(), True),
+        StructField("received_value", FloatType(), True),
         StructField("network_name", StringType(), True),
-        
-        StructField("avg_sent_value", DoubleType(), False),
-        StructField("avg_received_value", DoubleType(), False),
-        StructField("avg_total_value_for_sender", DoubleType(), False),
-        StructField("avg_total_value_for_receiver", DoubleType(), False),
-
-        StructField("sum_sent_value", DoubleType(), False),
-        StructField("sum_received_value", DoubleType(), False),
-        StructField("sum_total_value_for_sender", DoubleType(), False),
-        StructField("sum_total_value_for_receiver", DoubleType(), False),
-
-        StructField("min_sent_value", DoubleType(), False),
-        StructField("min_received_value", DoubleType(), False),
-        StructField("min_total_value_for_sender", DoubleType(), False),
-        StructField("min_total_value_for_receiver", DoubleType(), False),
-
-        StructField("max_sent_value", DoubleType(), False),
-        StructField("max_received_value", DoubleType(), False),
-        StructField("max_total_value_for_sender", DoubleType(), False),
-        StructField("max_total_value_for_receiver", DoubleType(), False),
-
-        StructField("median_sent_value", DoubleType(), False),
-        StructField("median_received_value", DoubleType(), False),
-        StructField("median_total_value_for_sender", DoubleType(), False),
-        StructField("median_total_value_for_receiver", DoubleType(), False),
-
-        StructField("mode_sent_value", DoubleType(), False),
-        StructField("mode_received_value", DoubleType(), False),
-        StructField("mode_total_value_for_sender", DoubleType(), False),
-        StructField("mode_total_value_for_receiver", DoubleType(), False),
-
-        StructField("stddev_sent_value", DoubleType(), False),
-        StructField("stddev_received_value", DoubleType(), False),
-        StructField("stddev_total_value_for_sender", DoubleType(), False),
-        StructField("stddev_total_value_for_receiver", DoubleType(), False),
-
-        StructField("num_sent_transactions", LongType(), False),
-        StructField("num_received_transactions", LongType(), False),
-
-        StructField("avg_time_between_sent_transactions", DoubleType(), False),
-        StructField("avg_time_between_received_transactions", DoubleType(), False),
-
-        StructField("avg_outgoing_speed_count", DoubleType(), False),
-        StructField("avg_incoming_speed_count", DoubleType(), False),
-        StructField("avg_outgoing_speed_value", DoubleType(), False),
-        StructField("avg_incoming_speed_value", DoubleType(), False),
-
-        StructField("avg_outgoing_acceleration_count", DoubleType(), False),
-        StructField("avg_incoming_acceleration_count", DoubleType(), False),
-        StructField("avg_outgoing_acceleration_value", DoubleType(), False),
-        StructField("avg_incoming_acceleration_value", DoubleType(), False),
-
-        StructField("avg_fee_paid", DoubleType(), False),
-        StructField("total_fee_paid", DoubleType(), False),
-        StructField("min_fee_paid", DoubleType(), False),
-        StructField("max_fee_paid", DoubleType(), False),
-
-        StructField("activity_duration_for_sender", LongType(), False),
-        StructField("first_transaction_timestamp_for_sender", TimestampType(), False),
-        StructField("last_transaction_timestamp_for_sender", TimestampType(), False),
-        
-        StructField("activity_duration_for_receiver", LongType(), False),
-        StructField("first_transaction_timestamp_for_receiver", TimestampType(), False),
-        StructField("last_transaction_timestamp_for_receiver", TimestampType(), False),
-
-        StructField("unique_out_degree", LongType(), False),
-        StructField("unique_in_degree", LongType(), False)
     ]
 )
 
-benchmark_input_schema = StructType([
-    StructField("hash", StringType(), False),
-    StructField("nonce", LongType(), False),
-    StructField("transaction_index", LongType(), False),
-    StructField("from_address", StringType(), False),
-    StructField("to_address", StringType(), False),
-    StructField("value", DoubleType(), False),
-    StructField("gas", LongType(), False),
-    StructField("gas_price", LongType(), False),
-    StructField("input", StringType(), True),
-    StructField("receipt_cumulative_gas_used", LongType(), False),
-    StructField("receipt_gas_used", LongType(), False),
-    StructField("block_timestamp", TimestampType(), False),  
-    StructField("block_number", LongType(), False),
-    StructField("block_hash", StringType(), False),
-    StructField("from_scam", LongType(), True), 
-    StructField("to_scam", LongType(), True),    
-    StructField("from_category", StringType(), True),
-    StructField("to_category", StringType(), True)
+aggregations_scaled_schema = StructType(
+    [
+        StructField("address", StringType(), False),
+        StructField("network_name", StringType(), False),
+        
+        StructField("avg_sent_value", FloatType(), False),
+        StructField("avg_received_value", FloatType(), False),
+        StructField("avg_total_value_for_sender", FloatType(), False),
+        StructField("avg_total_value_for_receiver", FloatType(), False),
+
+        StructField("sum_sent_value", FloatType(), False),
+        StructField("sum_received_value", FloatType(), False),
+        StructField("sum_total_value_for_sender", FloatType(), False),
+        StructField("sum_total_value_for_receiver", FloatType(), False),
+
+        StructField("min_sent_value", FloatType(), False),
+        StructField("min_received_value", FloatType(), False),
+        StructField("min_total_value_for_sender", FloatType(), False),
+        StructField("min_total_value_for_receiver", FloatType(), False),
+
+        StructField("max_sent_value", FloatType(), False),
+        StructField("max_received_value", FloatType(), False),
+        StructField("max_total_value_for_sender", FloatType(), False),
+        StructField("max_total_value_for_receiver", FloatType(), False),
+
+        StructField("median_sent_value", FloatType(), False),
+        StructField("median_received_value", FloatType(), False),
+        StructField("median_total_value_for_sender", FloatType(), False),
+        StructField("median_total_value_for_receiver", FloatType(), False),
+
+        StructField("mode_sent_value", FloatType(), False),
+        StructField("mode_received_value", FloatType(), False),
+        StructField("mode_total_value_for_sender", FloatType(), False),
+        StructField("mode_total_value_for_receiver", FloatType(), False),
+
+        StructField("stddev_sent_value", FloatType(), False),
+        StructField("stddev_received_value", FloatType(), False),
+        StructField("stddev_total_value_for_sender", FloatType(), False),
+        StructField("stddev_total_value_for_receiver", FloatType(), False),
+
+        StructField("num_sent_transactions", FloatType(), False),
+        StructField("num_received_transactions", FloatType(), False),
+
+        StructField("avg_time_between_sent_transactions", FloatType(), False),
+        StructField("avg_time_between_received_transactions", FloatType(), False),
+
+        StructField("avg_outgoing_speed_count", FloatType(), False),
+        StructField("avg_incoming_speed_count", FloatType(), False),
+        StructField("avg_outgoing_speed_value", FloatType(), False),
+        StructField("avg_incoming_speed_value", FloatType(), False),
+
+        StructField("avg_outgoing_acceleration_count", FloatType(), False),
+        StructField("avg_incoming_acceleration_count", FloatType(), False),
+        StructField("avg_outgoing_acceleration_value", FloatType(), False),
+        StructField("avg_incoming_acceleration_value", FloatType(), False),
+
+        StructField("avg_fee_paid", FloatType(), False),
+        StructField("total_fee_paid", FloatType(), False),
+        StructField("min_fee_paid", FloatType(), False),
+        StructField("max_fee_paid", FloatType(), False),
+
+        StructField("activity_duration", FloatType(), False),
+        StructField("first_transaction_timestamp", FloatType(), False),
+        StructField("last_transaction_timestamp", FloatType(), False),
+
+        StructField("unique_out_degree", FloatType(), False),
+        StructField("unique_in_degree", FloatType(), False)
+    ]
+)
+
+benchmark_input_schema = StructType(
+    [
+        StructField("hash", StringType(), False),
+        StructField("nonce", LongType(), False),
+        StructField("transaction_index", LongType(), False),
+        StructField("from_address", StringType(), False),
+        StructField("to_address", StringType(), False),
+        StructField("value", DoubleType(), False),
+        StructField("gas", LongType(), False),
+        StructField("gas_price", LongType(), False),
+        StructField("input", StringType(), True),
+        StructField("receipt_cumulative_gas_used", LongType(), False),
+        StructField("receipt_gas_used", LongType(), False),
+        StructField("block_timestamp", TimestampType(), False),  
+        StructField("block_number", LongType(), False),
+        StructField("block_hash", StringType(), False),
+        StructField("from_scam", LongType(), True), 
+        StructField("to_scam", LongType(), True),    
+        StructField("from_category", StringType(), True),
+        StructField("to_category", StringType(), True)
 ])
+
+joined_scaled_schema = StructType(
+    [
+        StructField("transaction_id", StringType(), False),
+        StructField("block_timestamp", FloatType(), False),
+        StructField("block_number", FloatType(), False),
+        StructField("transaction_hash", StringType(), False),
+        StructField("transaction_index", FloatType(), False),
+        StructField("fee", FloatType(), True),
+        StructField("sender_address", StringType(), True),
+        StructField("receiver_address", StringType(), True),
+        StructField("total_transferred_value", FloatType(), True),
+        StructField("total_input_value", FloatType(), True),
+        StructField("sent_value", FloatType(), True),
+        StructField("received_value", FloatType(), True),
+        StructField("network_name", StringType(), True),
+        
+        StructField("avg_sent_value", FloatType(), False),
+        StructField("avg_received_value", FloatType(), False),
+        StructField("avg_total_value_for_sender", FloatType(), False),
+        StructField("avg_total_value_for_receiver", FloatType(), False),
+
+        StructField("sum_sent_value", FloatType(), False),
+        StructField("sum_received_value", FloatType(), False),
+        StructField("sum_total_value_for_sender", FloatType(), False),
+        StructField("sum_total_value_for_receiver", FloatType(), False),
+
+        StructField("min_sent_value", FloatType(), False),
+        StructField("min_received_value", FloatType(), False),
+        StructField("min_total_value_for_sender", FloatType(), False),
+        StructField("min_total_value_for_receiver", FloatType(), False),
+
+        StructField("max_sent_value", FloatType(), False),
+        StructField("max_received_value", FloatType(), False),
+        StructField("max_total_value_for_sender", FloatType(), False),
+        StructField("max_total_value_for_receiver", FloatType(), False),
+
+        StructField("median_sent_value", FloatType(), False),
+        StructField("median_received_value", FloatType(), False),
+        StructField("median_total_value_for_sender", FloatType(), False),
+        StructField("median_total_value_for_receiver", FloatType(), False),
+
+        StructField("mode_sent_value", FloatType(), False),
+        StructField("mode_received_value", FloatType(), False),
+        StructField("mode_total_value_for_sender", FloatType(), False),
+        StructField("mode_total_value_for_receiver", FloatType(), False),
+
+        StructField("stddev_sent_value", FloatType(), False),
+        StructField("stddev_received_value", FloatType(), False),
+        StructField("stddev_total_value_for_sender", FloatType(), False),
+        StructField("stddev_total_value_for_receiver", FloatType(), False),
+
+        StructField("num_sent_transactions", FloatType(), False),
+        StructField("num_received_transactions", FloatType(), False),
+
+        StructField("avg_time_between_sent_transactions", FloatType(), False),
+        StructField("avg_time_between_received_transactions", FloatType(), False),
+
+        StructField("avg_outgoing_speed_count", FloatType(), False),
+        StructField("avg_incoming_speed_count", FloatType(), False),
+        StructField("avg_outgoing_speed_value", FloatType(), False),
+        StructField("avg_incoming_speed_value", FloatType(), False),
+
+        StructField("avg_outgoing_acceleration_count", FloatType(), False),
+        StructField("avg_incoming_acceleration_count", FloatType(), False),
+        StructField("avg_outgoing_acceleration_value", FloatType(), False),
+        StructField("avg_incoming_acceleration_value", FloatType(), False),
+
+        StructField("avg_fee_paid", FloatType(), False),
+        StructField("total_fee_paid", FloatType(), False),
+        StructField("min_fee_paid", FloatType(), False),
+        StructField("max_fee_paid", FloatType(), False),
+
+        StructField("activity_duration_for_sender", FloatType(), False),
+        StructField("first_transaction_timestamp_for_sender", FloatType(), False),
+        StructField("last_transaction_timestamp_for_sender", FloatType(), False),
+        
+        StructField("activity_duration_for_receiver", FloatType(), False),
+        StructField("first_transaction_timestamp_for_receiver", FloatType(), False),
+        StructField("last_transaction_timestamp_for_receiver", FloatType(), False),
+
+        StructField("unique_out_degree", FloatType(), False),
+        StructField("unique_in_degree", FloatType(), False)
+    ]
+)
+
+ml_schema = StructType(
+    [
+        StructField("block_timestamp", FloatType(), False),
+        StructField("block_number", FloatType(), False),
+        #StructField("transaction_hash", LongType(), False),
+        StructField("transaction_index", FloatType(), False),
+        StructField("fee", FloatType(), True),
+        #StructField("sender_address", LongType(), True),
+       # StructField("receiver_address", LongType(), True),
+        StructField("total_transferred_value", FloatType(), True),
+        StructField("total_input_value", FloatType(), True),
+        StructField("sent_value", FloatType(), True),
+        StructField("received_value", FloatType(), True),
+        StructField("network_name", BooleanType(), True),
+        
+        StructField("avg_sent_value", FloatType(), False),
+        StructField("avg_received_value", FloatType(), False),
+        StructField("avg_total_value_for_sender", FloatType(), False),
+        StructField("avg_total_value_for_receiver", FloatType(), False),
+
+        StructField("sum_sent_value", FloatType(), False),
+        StructField("sum_received_value", FloatType(), False),
+        StructField("sum_total_value_for_sender", FloatType(), False),
+        StructField("sum_total_value_for_receiver", FloatType(), False),
+
+        StructField("min_sent_value", FloatType(), False),
+        StructField("min_received_value", FloatType(), False),
+        StructField("min_total_value_for_sender", FloatType(), False),
+        StructField("min_total_value_for_receiver", FloatType(), False),
+
+        StructField("max_sent_value", FloatType(), False),
+        StructField("max_received_value", FloatType(), False),
+        StructField("max_total_value_for_sender", FloatType(), False),
+        StructField("max_total_value_for_receiver", FloatType(), False),
+
+        StructField("median_sent_value", FloatType(), False),
+        StructField("median_received_value", FloatType(), False),
+        StructField("median_total_value_for_sender", FloatType(), False),
+        StructField("median_total_value_for_receiver", FloatType(), False),
+
+        StructField("mode_sent_value", FloatType(), False),
+        StructField("mode_received_value", FloatType(), False),
+        StructField("mode_total_value_for_sender", FloatType(), False),
+        StructField("mode_total_value_for_receiver", FloatType(), False),
+
+        StructField("stddev_sent_value", FloatType(), False),
+        StructField("stddev_received_value", FloatType(), False),
+        StructField("stddev_total_value_for_sender", FloatType(), False),
+        StructField("stddev_total_value_for_receiver", FloatType(), False),
+
+        StructField("num_sent_transactions", FloatType(), False),
+        StructField("num_received_transactions", FloatType(), False),
+
+        StructField("avg_time_between_sent_transactions", FloatType(), False),
+        StructField("avg_time_between_received_transactions", FloatType(), False),
+
+        StructField("avg_outgoing_speed_count", FloatType(), False),
+        StructField("avg_incoming_speed_count", FloatType(), False),
+        StructField("avg_outgoing_speed_value", FloatType(), False),
+        StructField("avg_incoming_speed_value", FloatType(), False),
+
+        StructField("avg_outgoing_acceleration_count", FloatType(), False),
+        StructField("avg_incoming_acceleration_count", FloatType(), False),
+        StructField("avg_outgoing_acceleration_value", FloatType(), False),
+        StructField("avg_incoming_acceleration_value", FloatType(), False),
+
+        StructField("avg_fee_paid", FloatType(), False),
+        StructField("total_fee_paid", FloatType(), False),
+        StructField("min_fee_paid", FloatType(), False),
+        StructField("max_fee_paid", FloatType(), False),
+
+        StructField("activity_duration_for_sender", FloatType(), False),
+        StructField("first_transaction_timestamp_for_sender", FloatType(), False),
+        StructField("last_transaction_timestamp_for_sender", FloatType(), False),
+        
+        StructField("activity_duration_for_receiver", FloatType(), False),
+        StructField("first_transaction_timestamp_for_receiver", FloatType(), False),
+        StructField("last_transaction_timestamp_for_receiver", FloatType(), False),
+
+        StructField("unique_out_degree", FloatType(), False),
+        StructField("unique_in_degree", FloatType(), False)
+    ]
+)
