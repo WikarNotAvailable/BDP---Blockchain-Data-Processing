@@ -15,4 +15,5 @@ module "glue_jobs" {
   source         = "./modules/glue_jobs"
   script_bucket  = var.script_bucket
   glue_role_arn  = module.iam.glue_role_arn
+  default_arguments = var.glue_jobs_default_arguments
 }
