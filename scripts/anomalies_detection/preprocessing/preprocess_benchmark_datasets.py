@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from scripts.shared.schemas import transaction_schema, aggregations_schema
+from scripts.shared.benchmark_schemas import benchmark_transaction_schema, benchmark_aggregations_schema
 from scripts.anomalies_detection.preprocessing.components.preprocess_data_first_step import first_preprocess_testing_data
 from scripts.anomalies_detection.preprocessing.components.preprocess_data_second_step import second_preprocess_testing_data
 from scripts.anomalies_detection.preprocessing.components.preprocess_data_third_step import third_preprocess_testing_data
@@ -14,9 +14,9 @@ spark = (
     .getOrCreate()
 )
 
-transactions_df = spark.read.schema(transaction_schema).parquet("data/benchmark/etl/transactions")
+transactions_df = spark.read.schema(benchmark_transaction_schema).parquet("data/benchmark/etl/transactions")
 
-aggregations_df = spark.read.schema(aggregations_schema).parquet("data/benchmark/aggregations")
+aggregations_df = spark.read.schema(benchmark_aggregations_schema).parquet("data/benchmark/aggregations")
 
 first_preprocess_testing_data(transactions_df, aggregations_df)
 df = second_preprocess_testing_data(spark)
