@@ -2,11 +2,9 @@
 University group project, which main goals are to extract, store and process blockchain big data with cloud computing in order to detect anomalies using machine learning and statistic methods.
 
 Creating datasets for local testing
- ETL - run main.py and main_benchmarks.py in etl folder
+ETL - run perform_etl.py and perform_benchmark_etl.py in etl folder
 
-Aggregations - run aggregations.py in etl folder 
-![image](https://github.com/user-attachments/assets/28b7da35-77e7-4ca7-82d5-90a6ef989e99)
-these directories needs to be changes for benchmark data
+Aggregations - run aggregate.py and aggregate_benchmark in aggregate folder 
 
 Preprocessing (preprocessing folder in anomalies_detection folder) - 
 a) For benchmark data run preprocess_benchmark_datasets.py (once)
