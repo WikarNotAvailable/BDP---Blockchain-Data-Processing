@@ -1,0 +1,28 @@
+name: Upload to AWS
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  upload-to-aws:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # 3. Upload files to S3
+      - name: Upload ETL scripts to S3
+        run: aws s3 sync scripts/etl/cloud/ s3://aws-glue-assets-982534343940-eu-north-1/scripts/ --exclude "*" --include "*.py"
+
