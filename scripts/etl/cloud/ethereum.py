@@ -5,10 +5,39 @@ from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import col, lit, expr
+from pyspark.sql.functions import col, lit, expr, explode
+from datetime import datetime, timedelta
+import boto3
+import re
 
-## @params: [JOB_NAME]
-args = getResolvedOptions(sys.argv, ['JOB_NAME'])
+
+def validate_date(date_str: str) -> bool:
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
+
+def validate_params(start_date: str, end_date: str):
+    print(f"START_DATE: {start_date}, END_DATE: {end_date}")
+    if not start_date or not end_date:
+        print("Error: START_DATE and END_DATE parameters are required.")
+        sys.exit(1)
+
+    if not validate_date(start_date):
+        print(f"Error: START_DATE '{start_date}' is not in the correct format (YYYY-MM-DD).")
+        sys.exit(1)
+
+    if not validate_date(end_date):
+        print(f"Error: END_DATE '{end_date}' is not in the correct format (YYYY-MM-DD).")
+        sys.exit(1)
+
+    if start_date > end_date:
+        print("Error: START_DATE cannot be later than END_DATE.")
+        sys.exit(1)
+
+
 def eth_transform(df: DataFrame) -> DataFrame:
 
     fields_to_keep = [
@@ -44,10 +73,75 @@ def eth_transform(df: DataFrame) -> DataFrame:
 
     return df_eth
     
+def get_s3_objects(s3, bucket: str, prefix: str, start_date: str) -> list:
+    """
+    List S3 objects starting from a given date prefix with pagination support.
+
+    :param s3: Boto3 S3 client.
+    :param bucket: S3 bucket name.
+    :param prefix: Prefix path in the bucket.
+    :param start_date: Start date in 'YYYY-MM-DD' format.
+    :return: List of S3 objects.
+    """
+    objects = []
+    continuation_token = None 
+
+    while True:
+        params = {
+            'Bucket': bucket,
+            'Prefix': prefix,
+            'StartAfter': f"{prefix}date={start_date}"
+        }
+        if continuation_token:
+            params['ContinuationToken'] = continuation_token
+
+        try:
+            response = s3.list_objects_v2(**params)
+            contents = response.get("Contents", [])
+            objects.extend(contents)
+        
+            if not response.get('IsTruncated'):
+                break  
+
+            continuation_token = response.get('NextContinuationToken')
+
+        except Exception as e:
+            print(f"Error listing S3 objects: {e}")
+            break
+
+    return objects
+
+
+def filter_files_by_date(bucket: str, file_names: list, start_date: str, end_date: str) -> list[str]:
+    """
+    Filter S3 objects based on a date range.
+    
+    :param bucket: S3 bucket name.
+    :param file_names: List of S3 objects.
+    :param start_date: Start date in 'YYYY-MM-DD' format.
+    :param end_date: End date in 'YYYY-MM-DD' format.
+    :return: List of filtered S3 object keys.
+    """
+    start_datetime = datetime.strptime(start_date, "%Y-%m-%d")
+    end_datetime = datetime.strptime(end_date, "%Y-%m-%d")
+    regex = r'date=(\d{4}-\d{2}-\d{2})'
+
+    filtered_file_names = []
+    for file_name in file_names:
+        match = re.search(regex, file_name['Key'])
+        if match:
+            file_date = datetime.strptime(match.group(1), "%Y-%m-%d")
+            if start_datetime <= file_date <= end_datetime:
+                filtered_file_names.append(f"s3://{bucket}/{file_name['Key']}")
+
+    return filtered_file_names
+
+
 def setup_blockchain_db(spark):
     spark.sql("""
     CREATE DATABASE IF NOT EXISTS bdp
     """)
+
 
 def setup_iceberg_table(spark):
     spark.sql("""
@@ -71,8 +165,14 @@ def setup_iceberg_table(spark):
     TBLPROPERTIES ('table_type' = 'ICEBERG', 'write.format.default'='parquet', 'write.parquet.compression-codec'='zstd')
     """)
 
+
+args = getResolvedOptions(sys.argv, ['JOB_NAME', 'START_DATE', 'END_DATE'])
+start_date = args['START_DATE']
+end_date = args['END_DATE']
+validate_params(start_date, end_date)
+
 spark = (
-    SparkSession.builder.appName("DataETL")    
+    SparkSession.builder.appName("EthereumETL")    
     .config("spark.sql.parquet.enableVectorizedReader", "false")
     .config("spark.sql.parquet.mergeSchema", "true") # No need as we explicitly specify the schema
     .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
@@ -86,12 +186,26 @@ spark = (
 
 setup_blockchain_db(spark)
 setup_iceberg_table(spark)
+
 glueContext = GlueContext(spark)
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
+s3 = boto3.client('s3')
+bucket_name = 'aws-public-blockchain'
+prefix = 'v1.0/eth/transactions/'
 
-transactions = spark.read.parquet("s3://aws-public-blockchain/v1.0/eth/transactions/date=2024-12-11/")
+all_files = get_s3_objects(s3, bucket_name, prefix, start_date)
+print(f"Found {len(all_files)} files in the S3 bucket.")
+filtered_files = filter_files_by_date(bucket_name, all_files, start_date, end_date)
+print(f"Filtered {len(filtered_files)} files for the specified date range.")
+
+if not filtered_files:
+    print("No files found for the specified date range.")
+    job.commit()
+    sys.exit(0)
+
+transactions = spark.read.parquet(*filtered_files)
 result_df = eth_transform(transactions)
 
 glueContext.write_data_frame.from_catalog(
@@ -101,3 +215,4 @@ glueContext.write_data_frame.from_catalog(
 )
 
 job.commit()
+spark.stop()
