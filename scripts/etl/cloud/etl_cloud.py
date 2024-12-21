@@ -195,7 +195,7 @@ def setup_iceberg_table(spark):
         received_value DOUBLE,
         network_name STRING
     )
-    PARTITIONED BY (network_name, date(block_timestamp))
+    PARTITIONED BY (network_name)
     LOCATION 's3://bdp-cleaned-transactions'
     TBLPROPERTIES ('table_type' = 'ICEBERG', 'write.format.default'='parquet', 'write.parquet.compression-codec'='zstd')
     """)
