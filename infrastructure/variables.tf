@@ -30,5 +30,6 @@ variable "glue_jobs_default_arguments" {
     "--datalake-formats"                 = "iceberg"
     "--job-language"                     = "python"
     "--TempDir"                          = "s3://aws-glue-assets-982534349340-eu-north-1/temporary/"
+    "--enable-auto-scaling"              = "true"
   }
 }
