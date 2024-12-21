@@ -1,6 +1,8 @@
 # BDP-Blockchain-Data-Processing
 University group project, which main goals are to extract, store and process blockchain big data with cloud computing in order to detect anomalies using machine learning and statistic methods.
 
+Run "python -m pip install -e ." to create local package that helps in managing imports
+
 Creating datasets for local testing
  ETL - run main.py and main_benchmarks.py in etl folder
 
