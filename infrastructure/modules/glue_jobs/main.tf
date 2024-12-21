@@ -1,7 +1,7 @@
 locals {
   transactions_cleaning_arguments = {
-    "--END_DATE"       = "2024-12-12"
-    "--START_DATE"     = "2024-12-10"
+    "--END_DATE"       = "2024-11-30"
+    "--START_DATE"     = "2024-11-1"
     "--NETWORK_PREFIX" = "all"
   }
 
@@ -25,6 +25,7 @@ resource "aws_glue_job" "wallets_aggregations" {
   number_of_workers = 10
   glue_version      = "5.0"
   default_arguments = var.default_arguments
+  timeout           = 120
 }
 
 resource "aws_glue_job" "transactions_cleaning" {
@@ -40,4 +41,5 @@ resource "aws_glue_job" "transactions_cleaning" {
   number_of_workers = 10
   glue_version      = "5.0"
   default_arguments = local.transactions_cleaning_final_arguments
+  timeout           = 120
 }
