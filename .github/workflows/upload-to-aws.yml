@@ -7,8 +7,12 @@ on:
       - develop
       - master
 
+permissions:
+      id-token: write
+      contents: read 
+      
 jobs:
-  upload-to-aws:
+  deploy-glue-scripts:
     runs-on: ubuntu-latest
 
     steps:
