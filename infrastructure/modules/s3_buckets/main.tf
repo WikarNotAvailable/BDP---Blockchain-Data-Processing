@@ -1,5 +1,5 @@
-resource "aws_s3_bucket" "aws_glue_assets" {
-  bucket = "aws-glue-assets-982534349340-eu-north-1"
+resource "aws_s3_bucket" "custom_scripts" {
+  bucket = var.script_bucket
 }
 
 resource "aws_s3_bucket" "bdp_anomaly_classification" {

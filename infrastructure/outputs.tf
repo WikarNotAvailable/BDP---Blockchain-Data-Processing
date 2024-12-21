@@ -3,7 +3,8 @@ output "glue_role_arn" {
   value       = module.iam.glue_role_arn
 }
 
-output "bdp_database_name" {
+#Glue data catalog is dynamically created during ETL process
+/*output "bdp_database_name" {
   description = "Glue Catalog database name"
   value       = module.glue_catalog.database_name
-}
+}*/

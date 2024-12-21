@@ -1,46 +1,43 @@
-resource "aws_glue_job" "wallets_aggregations_job" {
-  name         = "Walets aggregations job"
-  role_arn     = var.glue_role_arn
-  
+locals {
+  transactions_cleaning_arguments = {
+    "--END_DATE"       = "2024-12-12"
+    "--START_DATE"     = "2024-12-10"
+    "--NETWORK_PREFIX" = "all"
+  }
+
+  transactions_cleaning_final_arguments = merge(
+    var.default_arguments,
+    local.transactions_cleaning_arguments
+  )
+}
+
+resource "aws_glue_job" "wallets_aggregations" {
+  name     = "Walets aggregations"
+  role_arn = var.glue_role_arn
+
   command {
     name            = "glueetl"
-    script_location = "s3://${var.script_bucket}/scripts/wallets_aggregations.py"
+    script_location = "s3://${var.script_bucket}/glue_scripts/wallets_aggregations.py"
     python_version  = "3"
   }
 
-  worker_type  = "G.1X"
-  number_of_workers = 2
-  glue_version = "5.0"
+  worker_type       = "G.1X"
+  number_of_workers = 10
+  glue_version      = "5.0"
   default_arguments = var.default_arguments
 }
 
-resource "aws_glue_job" "ethereum_transaction_cleaning" {
-  name         = "Ethereum transaction cleaning"
-  role_arn     = var.glue_role_arn
+resource "aws_glue_job" "transactions_cleaning" {
+  name     = "Transactions cleaning"
+  role_arn = var.glue_role_arn
   command {
     name            = "glueetl"
-    script_location = "s3://${var.script_bucket}/scripts/ethereum_transaction_cleaning.py"
-    python_version  = "3"
-  }
-  
-  worker_type  = "G.1X"
-  number_of_workers = 2
-  glue_version = "5.0"
-  default_arguments = var.default_arguments
-}
-
-resource "aws_glue_job" "bitcoin_transaction_cleaning" {
-  name         = "Bitcoin transaction cleaning"
-  role_arn     = var.glue_role_arn
-
-  command {
-    name            = "glueetl"
-    script_location = "s3://${var.script_bucket}/scripts/bitcoin_transaction_cleaning.py"
+    script_location = "s3://${var.script_bucket}/glue_scripts/transaction_cleaning.py"
     python_version  = "3"
   }
 
-  worker_type  = "G.1X"
-  number_of_workers = 2
-  glue_version = "5.0"
-  default_arguments = var.default_arguments
+  worker_type       = "G.1X"
+  number_of_workers = 10
+  glue_version      = "5.0"
+  default_arguments = local.transactions_cleaning_final_arguments
 }
