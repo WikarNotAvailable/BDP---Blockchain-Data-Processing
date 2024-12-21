@@ -246,11 +246,15 @@ def perform_etl(network_prefix: str, start_date: str, end_date: str) -> None:
     transactions = spark.read.parquet(*filtered_files)
     result_df = network.transform(transactions)
 
-    glueContext.write_data_frame.from_catalog(
-        frame=result_df,
-        database="bdp",
-        table_name="cleaned_transactions"
-    )        
+    result_df.createOrReplaceTempView("new_transactions")
+
+    # Perform MERGE INTO to skip matches and insert only new rows
+    spark.sql("""
+        MERGE INTO glue_catalog.bdp.cleaned_transactions AS target
+        USING new_transactions AS source
+        ON target.transaction_id = source.transaction_id
+        WHEN NOT MATCHED THEN INSERT *
+    """)       
 
 
 args = getResolvedOptions(sys.argv, ['JOB_NAME', 'START_DATE', 'END_DATE', 'NETWORK_PREFIX'])
