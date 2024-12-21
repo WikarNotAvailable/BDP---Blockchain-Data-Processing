@@ -260,6 +260,7 @@ glueContext = GlueContext(spark)
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
+spark.sql("TRUNCATE TABLE glue_catalog.bdp.aggregated_transactions")
 cols_to_drop = ["transaction_id", "block_number", "transaction_index"]
 
 transaction_df = glueContext.create_data_frame.from_catalog(
