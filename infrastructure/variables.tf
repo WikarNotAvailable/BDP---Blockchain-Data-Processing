@@ -6,14 +6,14 @@ variable "aws_region" {
 
 variable "glue_role_name" {
   type        = string
-  default     = "AWSGlueServiceRole-test"
+  default     = "AWSGlueServiceRole"
   description = " IAM role for Glue"
 }
 
-variable "script_bucket" {
+variable "glue_script_bucket" {
   type        = string
-  default     = "bdp-custom-scripts"
-  description = "Bucket with scripts"
+  default     = "bdp-glue-scripts"
+  description = "Bucket with Glue scripts"
 }
 
 variable "glue_jobs_default_arguments" {

@@ -12,12 +12,12 @@ locals {
 }
 
 resource "aws_glue_job" "wallets_aggregations" {
-  name     = "Walets aggregations"
+  name     = "Wallets aggregations"
   role_arn = var.glue_role_arn
 
   command {
     name            = "glueetl"
-    script_location = "s3://${var.script_bucket}/glue_scripts/wallets_aggregations.py"
+    script_location = "s3://${var.glue_script_bucket}/aggregations.py"
     python_version  = "3"
   }
 
@@ -32,7 +32,7 @@ resource "aws_glue_job" "transactions_cleaning" {
   role_arn = var.glue_role_arn
   command {
     name            = "glueetl"
-    script_location = "s3://${var.script_bucket}/glue_scripts/transaction_cleaning.py"
+    script_location = "s3://${var.glue_script_bucket}/etl_cloud.py"
     python_version  = "3"
   }
 

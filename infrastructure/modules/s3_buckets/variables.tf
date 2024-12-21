@@ -1,4 +1,4 @@
-variable "script_bucket" {
+variable "glue_script_bucket" {
   type        = string
-  description = "Bucket with scripts"
+  description = "Bucket with Glue scripts"
 }

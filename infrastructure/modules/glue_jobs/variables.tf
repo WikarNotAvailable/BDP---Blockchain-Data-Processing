@@ -1,6 +1,6 @@
-variable "script_bucket" {
+variable "glue_script_bucket" {
   type        = string
-  description = "Bucket with Glue scripts and assets"
+  description = "Bucket with Glue scripts"
 }
 
 variable "glue_role_arn" {
