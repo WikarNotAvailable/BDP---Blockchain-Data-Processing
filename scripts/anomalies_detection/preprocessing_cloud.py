@@ -1,5 +1,4 @@
 from pyspark.sql.functions import col
-from scripts.shared.consts import sender_fields, receiver_fields, common_fields
 from pyspark.sql.functions import udf, col, when
 from pyspark.ml.feature import VectorAssembler, RobustScaler
 from pyspark.sql.types import ArrayType, FloatType
@@ -249,13 +248,13 @@ cols_dict = {
 }
 
 
-def join_transactions_with_aggregations(transactions_df, aggregations_df):
+def join_transactions_with_aggregations(transactions_df, aggregations_df, cols_dict):
 
     sender_aggregations = aggregations_df.select(
-        sender_fields + [col(field).alias(f"{field}_for_sender") for field in common_fields]
+        cols_dict["sender_fields"] + [col(field).alias(f"{field}_for_sender") for field in cols_dict["common_fields"]]
     )
     receiver_aggregations = aggregations_df.select(
-        receiver_fields + [col(field).alias(f"{field}_for_receiver") for field in common_fields]
+        cols_dict["receiver_fields"] + [col(field).alias(f"{field}_for_receiver") for field in cols_dict["common_fields"]]
     )
 
     transactions_with_sender = transactions_df.join(
@@ -314,12 +313,12 @@ def convert_datetime_to_unixtime(datetime_cols, df):
 def prepare_features(transactions_df, aggregations_df, cols_dict):
     transactions_df = convert_datetime_to_unixtime(cols_dict["transactions_datetime"], transactions_df)
     transactions_df = scale_numeric_variables(cols_dict["transactions_numeric"] + cols_dict["transactions_datetime"], transactions_df)
-    transactions_df = encode_string_variables(cols_dict["transactions_string"], transactions_df)
 
     aggregations_df = convert_datetime_to_unixtime(cols_dict["aggregations_datetime"], aggregations_df).drop("network_name")
     aggregations_df = scale_numeric_variables(cols_dict["aggregations_numeric"] + cols_dict["aggregations_datetime"], aggregations_df)
 
-    transactions_aggregations_df = join_transactions_with_aggregations(transactions_df, aggregations_df)
+    transactions_aggregations_df = join_transactions_with_aggregations(transactions_df, aggregations_df, cols_dict)
+    transactions_aggregations_df = encode_string_variables(cols_dict["transactions_string"], transactions_aggregations_df)
 
     return transactions_aggregations_df
 
