@@ -43,3 +43,19 @@ resource "aws_glue_job" "transactions_cleaning" {
   default_arguments = local.transactions_cleaning_final_arguments
   timeout           = 120
 }
+
+resource "aws_glue_job" "removing_orphan_files" {
+  name     = "Orphan files removal"
+  role_arn = var.glue_role_arn
+  command {
+    name            = "glueetl"
+    script_location = "s3://${var.glue_script_bucket}/orphan_files_removal.py"
+    python_version  = "3"
+  }
+
+  worker_type       = "G.1X"
+  number_of_workers = 10
+  glue_version      = "5.0"
+  default_arguments = var.default_arguments
+  timeout           = 120
+}
