@@ -1,8 +1,7 @@
 from pyspark.sql.functions import col
-from scripts.shared.schemas import transaction_scaled_schema, aggregations_scaled_schema
 from scripts.shared.consts import sender_fields, receiver_fields, common_fields
 from pyspark.sql.functions import udf, col, when
-from pyspark.ml.feature import VectorAssembler, RobustScaler, StringIndexer
+from pyspark.ml.feature import VectorAssembler, RobustScaler
 from pyspark.sql.types import ArrayType, FloatType
 from pyspark.sql.functions import unix_timestamp
 from pyspark.sql import SparkSession
@@ -112,7 +111,7 @@ def setup_iceberg_table(spark):
 
 
 cols_dict = {
-    "transaction_numeric_cols" : [
+    "transactions_numeric" : [
         "block_number", 
         "transaction_index", 
         "fee", 
@@ -122,7 +121,7 @@ cols_dict = {
         "received_value"
     ],
 
-    "aggregation_numeric_cols" : [
+    "aggregations_numeric" : [
         "avg_sent_value",
         "avg_received_value",
         "avg_total_value_for_sender",
@@ -172,16 +171,16 @@ cols_dict = {
         "unique_in_degree"
     ],
 
-    "transactions_datetime_cols" : [
+    "transactions_datetime" : [
         "block_timestamp"
     ],
 
-    "aggregations_datetime_cols" : [
+    "aggregations_datetime" : [
         "first_transaction_timestamp",
         "last_transaction_timestamp"
     ],
 
-    "transactions_string_cols" : [
+    "transactions_string" : [
         "transaction_id",
         "transaction_hash",
         "sender_address",
@@ -305,23 +304,20 @@ def encode_string_variables(string_cols, df):
     return df_to_encode
 
 
-def scale_datetime_variables(datetime_cols, df):
-    df_to_scale = df
+def convert_datetime_to_unixtime(datetime_cols, df):
+    df_converted = df
     for col_name in datetime_cols:
-        df_to_scale = df_to_scale.withColumn(col_name, unix_timestamp(col_name))
-        
-    scaled_data = scale_numeric_variables(datetime_cols, df_to_scale)
-    
-    return scaled_data
+        df_converted = df_converted.withColumn(col_name, unix_timestamp(col_name))
+    return df_converted
 
 
 def prepare_features(transactions_df, aggregations_df, cols_dict):
-    transactions_df = scale_numeric_variables(cols_dict["transaction_numeric_cols"], transactions_df)
-    transactions_df = scale_datetime_variables(cols_dict["transactions_datetime_cols"], transactions_df)
-    transactions_df = encode_string_variables(cols_dict["transactions_string_cols"], transactions_df)
+    transactions_df = convert_datetime_to_unixtime(cols_dict["transactions_datetime"], transactions_df)
+    transactions_df = scale_numeric_variables(cols_dict["transactions_numeric"] + cols_dict["transactions_datetime"], transactions_df)
+    transactions_df = encode_string_variables(cols_dict["transactions_string"], transactions_df)
 
-    aggregations_df = scale_numeric_variables(cols_dict["aggregation_numeric_cols"], aggregations_df).drop("network_name")
-    aggregations_df = scale_datetime_variables(cols_dict["aggregations_datetime_cols"], aggregations_df).drop("network_name")
+    aggregations_df = convert_datetime_to_unixtime(cols_dict["aggregations_datetime"], aggregations_df).drop("network_name")
+    aggregations_df = scale_numeric_variables(cols_dict["aggregations_numeric"] + cols_dict["aggregations_datetime"], aggregations_df)
 
     transactions_aggregations_df = join_transactions_with_aggregations(transactions_df, aggregations_df)
 
