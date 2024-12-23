@@ -5,108 +5,6 @@ from pyspark.sql.types import ArrayType, FloatType
 from pyspark.sql.functions import unix_timestamp
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
-import sys
-from awsglue.transforms import *
-from awsglue.utils import getResolvedOptions
-from pyspark.context import SparkContext
-from awsglue.context import GlueContext
-from awsglue.job import Job
-
-
-def setup_blockchain_db(spark):
-    spark.sql("""
-    CREATE DATABASE IF NOT EXISTS bdp
-    """)
-
-
-def setup_iceberg_table(spark):
-    spark.sql("""
-    CREATE TABLE IF NOT EXISTS glue_catalog.bdp.features (
-        block_timestamp FLOAT,
-        block_number FLOAT,
-        transaction_index FLOAT,
-        fee FLOAT,
-        total_transferred_value FLOAT,
-        total_input_value FLOAT,
-        sent_value FLOAT,
-        received_value FLOAT,
-        network_name BOOLEAN,
-
-        avg_sent_value FLOAT,
-        avg_received_value FLOAT,
-        avg_total_value_for_sender FLOAT,
-        avg_total_value_for_receiver FLOAT,
-
-        sum_sent_value FLOAT,
-        sum_received_value FLOAT,
-        sum_total_value_for_sender FLOAT,
-        sum_total_value_for_receiver FLOAT,
-
-        min_sent_value FLOAT,
-        min_received_value FLOAT,
-        min_total_value_for_sender FLOAT,
-        min_total_value_for_receiver FLOAT,
-
-        max_sent_value FLOAT,
-        max_received_value FLOAT,
-        max_total_value_for_sender FLOAT,
-        max_total_value_for_receiver FLOAT,
-
-        median_sent_value FLOAT,
-        median_received_value FLOAT,
-        median_total_value_for_sender FLOAT,
-        median_total_value_for_receiver FLOAT,
-
-        mode_sent_value FLOAT,
-        mode_received_value FLOAT,
-        mode_total_value_for_sender FLOAT,
-        mode_total_value_for_receiver FLOAT,
-
-        stddev_sent_value FLOAT,
-        stddev_received_value FLOAT,
-        stddev_total_value_for_sender FLOAT,
-        stddev_total_value_for_receiver FLOAT,
-
-        num_sent_transactions FLOAT,
-        num_received_transactions FLOAT,
-
-        avg_time_between_sent_transactions FLOAT,
-        avg_time_between_received_transactions FLOAT,
-
-        avg_outgoing_speed_count FLOAT,
-        avg_incoming_speed_count FLOAT,
-        avg_outgoing_speed_value FLOAT,
-        avg_incoming_speed_value FLOAT,
-
-        avg_outgoing_acceleration_count FLOAT,
-        avg_incoming_acceleration_count FLOAT,
-        avg_outgoing_acceleration_value FLOAT,
-        avg_incoming_acceleration_value FLOAT,
-
-        avg_fee_paid FLOAT,
-        total_fee_paid FLOAT,
-        min_fee_paid FLOAT,
-        max_fee_paid FLOAT,
-
-        activity_duration_for_sender FLOAT,
-        first_transaction_timestamp_for_sender FLOAT,
-        last_transaction_timestamp_for_sender FLOAT,
-
-        activity_duration_for_receiver FLOAT,
-        first_transaction_timestamp_for_receiver FLOAT,
-        last_transaction_timestamp_for_receiver FLOAT,
-
-        unique_out_degree FLOAT,
-        unique_in_degree FLOAT
-    )                                                                      
-    PARTITIONED BY (network_name)
-    LOCATION 's3://bdp-features'
-    TBLPROPERTIES (
-        'table_type' = 'ICEBERG',
-        'write.format.default' = 'parquet',
-        'write.parquet.compression-codec' = 'zstd'
-    )
-""")
 
 
 cols_dict = {
@@ -323,86 +221,27 @@ def prepare_features(transactions_df, aggregations_df, cols_dict):
     return transactions_aggregations_df
 
 spark = (
-    SparkSession.builder.appName("FeaturesPreprocessing")    
+    SparkSession.builder.appName("DataPreprocessing")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
-    .config("spark.sql.parquet.mergeSchema", "true") # No need as we explicitly specify the schema
-    .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
-    .config("spark.sql.catalog.glue_catalog", "org.apache.iceberg.spark.SparkCatalog") \
-    .config("spark.sql.catalog.glue_catalog.warehouse", "s3://bdp-wallets-aggregations/") \
-    .config("spark.sql.catalog.glue_catalog.catalog-impl", "org.apache.iceberg.aws.glue.GlueCatalog") \
-    .config("spark.sql.catalog.glue_catalog.io-impl", "org.apache.iceberg.aws.s3.S3FileIO") \
-    .config("spark.sql.catalog.glue_catalog.glue.id", "982534349340") \
-    .config("spark.sql.adaptive.enabled", "true") # Keep partitions in simmilar size
+    .config("spark.sql.parquet.mergeSchema", "false")
+    .config("spark.executor.memory", "16g") 
+    .config("spark.driver.memory", "8g") 
     .getOrCreate()
 )
 
-setup_blockchain_db(spark)
-setup_iceberg_table(spark)
+transactions_btc_df = spark.read.parquet("data/historical/etl/transactions").filter(col("network_name") == "bitcoin")
+transactions_eth_df = spark.read.parquet("data/historical/etl/transactions").filter(col("network_name") == "ethereum")
 
-glueContext = GlueContext(spark)
-job = Job(glueContext)
-
-args = getResolvedOptions(sys.argv, ['JOB_NAME'])
-job.init(args['JOB_NAME'], args)
-
-transactions_btc_df = glueContext.create_data_frame.from_catalog(
-    database="bdp",
-    table_name="cleaned_transactions",
-    additional_options = {
-        "useCatalogSchema": True,
-        "useSparkDataSource": True
-    }
-).filter(col("network_name") == "bitcoin")
-
-transactions_eth_df = glueContext.create_data_frame.from_catalog(
-    database="bdp",
-    table_name="cleaned_transactions",
-    additional_options = {
-        "useCatalogSchema": True,
-        "useSparkDataSource": True
-    }
-).filter(col("network_name") == "ethereum")
-
-aggregations_btc_df = glueContext.create_data_frame.from_catalog(
-    database="bdp",
-    table_name="aggregated_transactions",
-    additional_options = {
-        "useCatalogSchema": True,
-        "useSparkDataSource": True
-    }
-).filter(col("network_name") == "bitcoin")
-
-aggregations_eth_df = glueContext.create_data_frame.from_catalog(
-    database="bdp",
-    table_name="aggregated_transactions",
-    additional_options = {
-        "useCatalogSchema": True,
-        "useSparkDataSource": True
-    }
-).filter(col("network_name") == "ethereum")
+aggregations_btc_df = spark.read.parquet("data/historical/aggregations").filter(col("network_name") == "bitcoin")
+aggregations_eth_df = spark.read.parquet("data/historical/aggregations").filter(col("network_name") == "ethereum")
 
 
+output_dir = "data/historical/features"
 transactions_aggregations_btc_df = prepare_features(transactions_btc_df, aggregations_btc_df, cols_dict)
-glueContext.write_data_frame.from_catalog(
-    frame=transactions_aggregations_btc_df,
-    database="bdp",
-    table_name="features",
-    additional_options = {
-        "useCatalogSchema": True,
-        "useSparkDataSource": True
-    }
-)
+transactions_aggregations_btc_df.coalesce(1).write.parquet(output_dir, compression="zstd", mode="append" )
 
 transactions_aggregations_eth_df = prepare_features(transactions_eth_df, aggregations_eth_df, cols_dict)
-glueContext.write_data_frame.from_catalog(
-    frame=transactions_aggregations_eth_df,
-    database="bdp",
-    table_name="features",
-    additional_options = {
-        "useCatalogSchema": True,
-        "useSparkDataSource": True
-    }
-)
+transactions_aggregations_eth_df.coalesce(1).write.parquet(output_dir, compression="zstd", mode="append" )
 
-job.commit()
+
 spark.stop()
