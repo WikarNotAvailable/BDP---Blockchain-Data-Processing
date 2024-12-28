@@ -6,7 +6,7 @@ variable "aws_region" {
 
 variable "glue_role_name" {
   type        = string
-  default     = "AWSGlueServiceRole"
+  default     = "GlueServiceRole"
   description = " IAM role for Glue"
 }
 
@@ -32,4 +32,22 @@ variable "glue_jobs_default_arguments" {
     "--TempDir"                          = "s3://aws-glue-assets-982534349340-eu-north-1/temporary/"
     "--enable-auto-scaling"              = "true"
   }
+}
+
+variable "orphan_files_removal_workflow_name" {
+  type        = string
+  default     = "Orphan files removal"
+  description = "Name of the orphan files removal Glue workflow."
+}
+
+variable "etl_workflow_name" {
+  type        = string
+  default     = "ETL"
+  description = "Name of the etl Glue workflow."
+}
+
+variable "github_role_name" {
+  type        = string
+  default     = "GitHubOIDCWorkflowRole"
+  description = "IAM role for Github integration name"
 }
