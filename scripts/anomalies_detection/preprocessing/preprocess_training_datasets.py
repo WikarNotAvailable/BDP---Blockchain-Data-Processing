@@ -30,10 +30,10 @@ if step == 1:
 elif step == 2:
     second_preprocess_training_data(spark)
 else: 
-    aggregated_transactions_merged_df = spark.read.schema(joined_scaled_schema).parquet("data/historical/preprocessing/merged_networks_transactions_with_aggregations")
+    wallets_aggregations_merged_df = spark.read.schema(joined_scaled_schema).parquet("data/historical/preprocessing/merged_networks_transactions_with_aggregations")
 
-    aggregated_transactions_eth_df = spark.read.schema(joined_scaled_schema).parquet("data/historical/preprocessing/eth_with_aggregations")
+    wallets_aggregations_eth_df = spark.read.schema(joined_scaled_schema).parquet("data/historical/preprocessing/eth_with_aggregations")
     
-    aggregated_transactions_btc_df = spark.read.schema(joined_scaled_schema).parquet("data/historical/preprocessing/btc_with_aggregations")
+    wallets_aggregations_btc_df = spark.read.schema(joined_scaled_schema).parquet("data/historical/preprocessing/btc_with_aggregations")
     
-    third_preprocess_training_data(aggregated_transactions_merged_df, aggregated_transactions_eth_df, aggregated_transactions_btc_df)
+    third_preprocess_training_data(wallets_aggregations_merged_df, wallets_aggregations_eth_df, wallets_aggregations_btc_df)

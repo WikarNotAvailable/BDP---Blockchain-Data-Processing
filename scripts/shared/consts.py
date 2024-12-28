@@ -66,7 +66,7 @@ aggregations_datetime_cols = [
     "last_transaction_timestamp"
 ]
 
-aggregated_transactions_string_cols = [
+wallets_aggregations_string_cols = [
     "transaction_id",
     "transaction_hash",
     "sender_address",

@@ -1,5 +1,5 @@
 from pyspark.sql.functions import col, when
-from scripts.shared.consts import aggregated_transactions_string_cols
+from scripts.shared.consts import wallets_aggregations_string_cols
 from scripts.anomalies_detection.preprocessing.components.preprocess_data_first_step import save_preprocessed_data
 
 
@@ -30,16 +30,16 @@ def encode_string_variables(string_cols, df):
         
     return df_to_encode
 
-def third_preprocess_training_data(aggregated_transactions_merged_df, aggregated_transactions_eth_df, aggregated_transactions_btc_df):     
-    aggregated_transactions_merged_df = encode_string_variables(aggregated_transactions_string_cols, aggregated_transactions_merged_df)
-    save_preprocessed_data(aggregated_transactions_merged_df, "data/historical/training/merged")
+def third_preprocess_training_data(wallets_aggregations_merged_df, wallets_aggregations_eth_df, wallets_aggregations_btc_df):     
+    wallets_aggregations_merged_df = encode_string_variables(wallets_aggregations_string_cols, wallets_aggregations_merged_df)
+    save_preprocessed_data(wallets_aggregations_merged_df, "data/historical/training/merged")
     
-    aggregated_transactions_eth_df = encode_string_variables(aggregated_transactions_string_cols, aggregated_transactions_eth_df)
-    save_preprocessed_data(aggregated_transactions_eth_df, "data/historical/training/eth")
+    wallets_aggregations_eth_df = encode_string_variables(wallets_aggregations_string_cols, wallets_aggregations_eth_df)
+    save_preprocessed_data(wallets_aggregations_eth_df, "data/historical/training/eth")
     
-    aggregated_transactions_btc_df = encode_string_variables(aggregated_transactions_string_cols, aggregated_transactions_btc_df)
-    save_preprocessed_data(aggregated_transactions_btc_df, "data/historical/training/btc")
+    wallets_aggregations_btc_df = encode_string_variables(wallets_aggregations_string_cols, wallets_aggregations_btc_df)
+    save_preprocessed_data(wallets_aggregations_btc_df, "data/historical/training/btc")
     
-def third_preprocess_testing_data(aggregated_transactions_eth_df):     
-    aggregated_transactions_eth_df = encode_string_variables(aggregated_transactions_string_cols, aggregated_transactions_eth_df)
-    save_preprocessed_data(aggregated_transactions_eth_df, "data/benchmark/testing/eth")
+def third_preprocess_testing_data(wallets_aggregations_eth_df):     
+    wallets_aggregations_eth_df = encode_string_variables(wallets_aggregations_string_cols, wallets_aggregations_eth_df)
+    save_preprocessed_data(wallets_aggregations_eth_df, "data/benchmark/testing/eth")
