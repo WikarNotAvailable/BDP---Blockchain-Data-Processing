@@ -162,7 +162,7 @@ def setup_blockchain_db(spark):
 
 def setup_iceberg_table(spark):
     spark.sql("""
-    CREATE TABLE IF NOT EXISTS glue_catalog.bdp.aggregated_transactions (
+    CREATE TABLE IF NOT EXISTS glue_catalog.bdp.wallets_aggregations (
     address STRING,
     network_name STRING,
     
@@ -260,7 +260,7 @@ glueContext = GlueContext(spark)
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
-spark.sql("TRUNCATE TABLE glue_catalog.bdp.aggregated_transactions")
+spark.sql("TRUNCATE TABLE glue_catalog.bdp.wallets_aggregations")
 cols_to_drop = ["transaction_id", "block_number", "transaction_index"]
 
 transaction_df = glueContext.create_data_frame.from_catalog(
@@ -291,7 +291,7 @@ aggregations_df = aggregations_df.join(unique_degrees_df, "address", "outer").na
 glueContext.write_data_frame.from_catalog(
     frame=aggregations_df,
     database="bdp",
-    table_name="aggregated_transactions",
+    table_name="wallets_aggregations",
     additional_options = {
         "useCatalogSchema": True,
         "useSparkDataSource": True

@@ -17,7 +17,7 @@ resource "aws_glue_job" "wallets_aggregations" {
 
   command {
     name            = "glueetl"
-    script_location = "s3://${var.glue_script_bucket}/aggregations.py"
+    script_location = "s3://${var.glue_script_bucket}/wallets_aggregations.py"
     python_version  = "3"
   }
 

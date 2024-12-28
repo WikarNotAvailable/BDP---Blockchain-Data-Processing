@@ -13,8 +13,8 @@ resource "aws_glue_trigger" "etl_on_demand_trigger" {
   }
 }
 
-resource "aws_glue_trigger" "aggregations_trigger" {
-  name          = "Aggregations trigger"
+resource "aws_glue_trigger" "wallets_aggregations_trigger" {
+  name          = "Wallets aggregations trigger"
   type          = "CONDITIONAL"
   workflow_name = var.etl_workflow_name
 

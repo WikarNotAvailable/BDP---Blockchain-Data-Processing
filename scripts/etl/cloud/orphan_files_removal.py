@@ -24,7 +24,7 @@ job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
 
 spark.sql("CALL glue_catalog.system.remove_orphan_files(table => 'bdp.cleaned_transactions')")
-spark.sql("CALL glue_catalog.system.remove_orphan_files(table => 'bdp.aggregated_transactions')")
+spark.sql("CALL glue_catalog.system.remove_orphan_files(table => 'bdp.wallets_aggregations')")
 spark.sql("CALL glue_catalog.system.remove_orphan_files(table => 'bdp.features')")
 
 job.commit()

@@ -9,7 +9,9 @@ data "aws_iam_policy_document" "github_oidc_assume_role_policy" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:WikarNotAvailable/BDP-Blockchain-Data-Processing:ref:refs/heads/<branch-name>"]
+      values   = [
+        "repo:WikarNotAvailable/BDP-Blockchain-Data-Processing:ref:refs/heads/develop",
+        "repo:WikarNotAvailable/BDP-Blockchain-Data-Processing:ref:refs/heads/master"]
     }
   }
 }
