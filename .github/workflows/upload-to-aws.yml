@@ -29,5 +29,5 @@ jobs:
 
       # 3. Upload files to S3
       - name: Upload ETL scripts to S3
-        run: aws s3 sync scripts/etl/cloud/ s3://bdp-glue-scripts --exclude "*" --include "*.py"
+        run: aws s3 sync scripts/cloud/etl/ s3://bdp-glue-scripts --exclude "*" --include "*.py"
 

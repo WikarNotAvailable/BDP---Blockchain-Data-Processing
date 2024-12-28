@@ -4,9 +4,9 @@ from botocore.client import Config
 from botocore import UNSIGNED
 from pyspark.sql import SparkSession
 import tempfile
-from components.bitcoin import btc_transform
-from components.ethereum import eth_transform
-from components.etl import extract, load, transform
+from scripts.local.etl.components.bitcoin import btc_transform
+from scripts.local.etl.components.ethereum import eth_transform
+from scripts.local.etl.components.etl import extract, load, transform
 from pyspark.sql.functions import expr
 
 

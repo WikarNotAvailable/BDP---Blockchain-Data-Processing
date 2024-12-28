@@ -1,7 +1,7 @@
 from pyspark.sql.functions import mean, mode, stddev, count, median, sum, min, max, col, lit, count_distinct, unix_timestamp, lag, first, when, monotonically_increasing_id
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.window import Window
-from scripts.shared.schemas import transaction_schema
+from scripts.local.shared.schemas import transaction_schema
 
 def calculate_aggregations(df):
     sender_window = Window.partitionBy("sender_address").orderBy("block_timestamp")

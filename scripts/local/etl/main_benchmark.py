@@ -1,7 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import expr
-from benchmark_components.etl import extract, transform, load
-from benchmark_components.ethereum import eth_transform
+from scripts.local.etl.benchmark_components.etl import extract, transform, load
+from scripts.local.etl.benchmark_components.ethereum import eth_transform
 
 
 def perform_etl(spark, csv_path, transform_func, label):

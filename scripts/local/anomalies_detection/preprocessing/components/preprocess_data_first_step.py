@@ -1,6 +1,6 @@
 from pyspark.sql.functions import udf, col, when
 from pyspark.ml.feature import VectorAssembler, RobustScaler, StringIndexer
-from scripts.shared.consts import transaction_numeric_cols, aggregation_numeric_cols, transactions_datetime_cols, aggregations_datetime_cols
+from scripts.local.shared.consts import transaction_numeric_cols, aggregation_numeric_cols, transactions_datetime_cols, aggregations_datetime_cols
 from pyspark.sql.types import ArrayType, FloatType
 from pyspark.sql.functions import unix_timestamp
 
