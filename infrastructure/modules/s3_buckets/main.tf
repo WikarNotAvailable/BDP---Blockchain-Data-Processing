@@ -1,5 +1,5 @@
-resource "aws_s3_bucket" "custom_scripts" {
-  bucket = var.glue_script_bucket
+resource "aws_s3_bucket" "glue_scripts" {
+  bucket = "bdp-glue-scripts"
 }
 
 resource "aws_s3_bucket" "bdp_anomaly_classification" {

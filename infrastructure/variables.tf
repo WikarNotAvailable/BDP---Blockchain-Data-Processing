@@ -10,12 +10,6 @@ variable "glue_role_name" {
   description = " IAM role for Glue"
 }
 
-variable "glue_script_bucket" {
-  type        = string
-  default     = "bdp-glue-scripts"
-  description = "Bucket with Glue scripts"
-}
-
 variable "glue_jobs_default_arguments" {
   type = map(string)
   default = {
