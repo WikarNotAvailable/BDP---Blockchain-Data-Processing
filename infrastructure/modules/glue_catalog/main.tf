@@ -91,7 +91,7 @@ resource "aws_glue_catalog_table" "cleaned_transactions" {
   }
 }
 
-resource "aws_glue_catalog_table_optimizer" "cleaned_transactions_optimizer" {
+resource "aws_glue_catalog_table_optimizer" "cleaned_transactions_orphan_files_deletion_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
   table_name    = aws_glue_catalog_table.cleaned_transactions.name
@@ -110,9 +110,21 @@ resource "aws_glue_catalog_table_optimizer" "cleaned_transactions_optimizer" {
   }
 }
 
-resource "aws_glue_catalog_table" "wallets_aggreagations" {
+resource "aws_glue_catalog_table_optimizer" "cleaned_transactions_compaction_optimizer" {
+  catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
-  name          = "wallets_aggreagations"
+  table_name    = aws_glue_catalog_table.cleaned_transactions.name
+  type          = "compaction"
+
+  configuration {
+    role_arn = var.glue_role_arn
+    enabled  = true
+  }
+}
+
+resource "aws_glue_catalog_table" "wallets_aggregations" {
+  database_name = aws_glue_catalog_database.bdp_db.name
+  name          = "wallets_aggregations"
 
   table_type = "EXTERNAL_TABLE"
   open_table_format_input {
@@ -141,7 +153,7 @@ resource "aws_glue_catalog_table" "wallets_aggreagations" {
     compressed    = true
 
     ser_de_info {
-      name                  = "wallets_aggreagations_serde"
+      name                  = "wallets_aggregations_serde"
       serialization_library = "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
     }
 
@@ -353,10 +365,10 @@ resource "aws_glue_catalog_table" "wallets_aggreagations" {
   }
 }
 
-resource "aws_glue_catalog_table_optimizer" "wallets_aggregations_optimizer" {
+resource "aws_glue_catalog_table_optimizer" "wallets_aggregations_orphan_files_deletion_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
-  table_name    = aws_glue_catalog_table.wallets_aggreagations.name
+  table_name    = aws_glue_catalog_table.wallets_aggregations.name
   type          = "orphan_file_deletion"
 
   configuration {
@@ -369,6 +381,18 @@ resource "aws_glue_catalog_table_optimizer" "wallets_aggregations_optimizer" {
         location                             = "s3://${var.bdp_wallets_aggregations_bucket}"
       }
     }
+  }
+}
+
+resource "aws_glue_catalog_table_optimizer" "wallets_aggregations_compaction_optimizer" {
+  catalog_id    = "982534349340"
+  database_name = aws_glue_catalog_database.bdp_db.name
+  table_name    = aws_glue_catalog_table.wallets_aggregations.name
+  type          = "compaction"
+
+  configuration {
+    role_arn = var.glue_role_arn
+    enabled  = true
   }
 }
 
@@ -654,7 +678,7 @@ resource "aws_glue_catalog_table" "features" {
 }
 
 
-resource "aws_glue_catalog_table_optimizer" "features_optimizer" {
+resource "aws_glue_catalog_table_optimizer" "features_orphan_files_deletion_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
   table_name    = aws_glue_catalog_table.features.name
@@ -670,5 +694,17 @@ resource "aws_glue_catalog_table_optimizer" "features_optimizer" {
         location                             = "s3://${var.bdp_features_bucket}"
       }
     }
+  }
+}
+
+resource "aws_glue_catalog_table_optimizer" "features_compaction_optimizer" {
+  catalog_id    = "982534349340"
+  database_name = aws_glue_catalog_database.bdp_db.name
+  table_name    = aws_glue_catalog_table.features.name
+  type          = "compaction"
+
+  configuration {
+    role_arn = var.glue_role_arn
+    enabled  = true
   }
 }
