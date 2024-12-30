@@ -1,6 +1,6 @@
 from pyspark.sql.functions import col, when
-from scripts.shared.consts import wallets_aggregations_string_cols
-from scripts.anomalies_detection.preprocessing.components.preprocess_data_first_step import save_preprocessed_data
+from scripts.local.shared.consts import wallets_aggregations_string_cols
+from scripts.local.anomalies_detection.preprocessing.components.preprocess_data_first_step import save_preprocessed_data
 
 
 '''    

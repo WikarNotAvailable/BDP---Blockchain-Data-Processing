@@ -1,7 +1,7 @@
 from functools import reduce
 from typing import Callable
 from pyspark.sql import SparkSession, DataFrame
-from scripts.shared.schemas import benchmark_input_schema
+from scripts.local.shared.schemas import benchmark_input_schema
 
 def extract(spark: SparkSession, path: str) -> DataFrame:
     df = spark.read.schema(benchmark_input_schema).csv(path, header=True)

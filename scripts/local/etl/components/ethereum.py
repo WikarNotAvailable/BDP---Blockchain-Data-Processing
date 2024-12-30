@@ -1,6 +1,6 @@
 from pyspark.sql.functions import col, lit
 from pyspark.sql import SparkSession, DataFrame
-from scripts.shared.schemas import eth_schema
+from scripts.local.shared.schemas import eth_schema
 
 
 def eth_transform(spark: SparkSession, file_name: str) -> DataFrame:

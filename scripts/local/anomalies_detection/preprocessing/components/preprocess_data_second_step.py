@@ -1,4 +1,4 @@
-from scripts.anomalies_detection.preprocessing.components.join_transactions_with_aggregations import join_transactions_with_aggregations
+from scripts.local.anomalies_detection.preprocessing.components.join_transactions_with_aggregations import join_transactions_with_aggregations
 
 def second_preprocess_training_data(spark):     
     join_transactions_with_aggregations(spark, "data/historical/preprocessing/transactions_merged", "data/historical/preprocessing/aggregations_merged", "data/historical/preprocessing/merged_networks_transactions_with_aggregations")

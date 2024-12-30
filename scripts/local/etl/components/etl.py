@@ -1,7 +1,7 @@
 from functools import reduce
 from typing import Callable
 from pyspark.sql import SparkSession, DataFrame
-from scripts.etl.components.utils import download_files, get_s3_objects, filter_files_by_date
+from scripts.local.etl.components.utils import download_files, get_s3_objects, filter_files_by_date
 
 
 def extract(s3: str, bucket_name: str, prefix:str, start_date: str, end_date: str, save_dir: str) -> list[str]:
