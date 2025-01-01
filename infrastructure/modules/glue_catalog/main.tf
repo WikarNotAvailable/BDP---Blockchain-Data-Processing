@@ -2,7 +2,7 @@ resource "aws_glue_catalog_database" "bdp_db" {
   name = "bdp"
 }
 
-resource "aws_glue_catalog_table" "cleaned_transactions" {
+/*resource "aws_glue_catalog_table" "cleaned_transactions" {
   database_name = aws_glue_catalog_database.bdp_db.name
   name          = "cleaned_transactions"
   table_type    = "EXTERNAL_TABLE"
@@ -13,10 +13,10 @@ resource "aws_glue_catalog_table" "cleaned_transactions" {
     }
   }
   //Commented because https://github.com/hashicorp/terraform-provider-aws/issues/36531
-  /*partition_keys {
+  partition_keys {
     name = "network_name"
     type = "string"
-  }*/
+  }
 
   parameters = {
     "write.format.default"            = "parquet"
@@ -88,12 +88,12 @@ resource "aws_glue_catalog_table" "cleaned_transactions" {
       type = "string"
     }
   }
-}
+}*/
 
 resource "aws_glue_catalog_table_optimizer" "cleaned_transactions_orphan_files_deletion_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
-  table_name    = aws_glue_catalog_table.cleaned_transactions.name
+  table_name    = "cleaned_transactions"
   type          = "orphan_file_deletion"
 
   configuration {
@@ -112,7 +112,7 @@ resource "aws_glue_catalog_table_optimizer" "cleaned_transactions_orphan_files_d
 resource "aws_glue_catalog_table_optimizer" "cleaned_transactions_compaction_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
-  table_name    = aws_glue_catalog_table.cleaned_transactions.name
+  table_name    = "cleaned_transactions"
   type          = "compaction"
 
   configuration {
@@ -121,7 +121,7 @@ resource "aws_glue_catalog_table_optimizer" "cleaned_transactions_compaction_opt
   }
 }
 
-resource "aws_glue_catalog_table" "wallets_aggregations" {
+/*resource "aws_glue_catalog_table" "wallets_aggregations" {
   database_name = aws_glue_catalog_database.bdp_db.name
   name          = "wallets_aggregations"
 
@@ -133,10 +133,10 @@ resource "aws_glue_catalog_table" "wallets_aggregations" {
   }
 
   //Commented because https://github.com/hashicorp/terraform-provider-aws/issues/36531
-  /*partition_keys {
+  partition_keys {
     name = "network_name"
     type = "string"
-  }*/
+  }
 
   parameters = {
     "write.format.default"            = "parquet",
@@ -362,12 +362,12 @@ resource "aws_glue_catalog_table" "wallets_aggregations" {
     }
 
   }
-}
+}*/
 
 resource "aws_glue_catalog_table_optimizer" "wallets_aggregations_orphan_files_deletion_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
-  table_name    = aws_glue_catalog_table.wallets_aggregations.name
+  table_name    = "wallets_aggregations"
   type          = "orphan_file_deletion"
 
   configuration {
@@ -386,7 +386,7 @@ resource "aws_glue_catalog_table_optimizer" "wallets_aggregations_orphan_files_d
 resource "aws_glue_catalog_table_optimizer" "wallets_aggregations_compaction_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
-  table_name    = aws_glue_catalog_table.wallets_aggregations.name
+  table_name    = "wallets_aggregations"
   type          = "compaction"
 
   configuration {
@@ -395,7 +395,7 @@ resource "aws_glue_catalog_table_optimizer" "wallets_aggregations_compaction_opt
   }
 }
 
-resource "aws_glue_catalog_table" "features" {
+/*resource "aws_glue_catalog_table" "features" {
   database_name = aws_glue_catalog_database.bdp_db.name
   name          = "features"
 
@@ -407,10 +407,10 @@ resource "aws_glue_catalog_table" "features" {
   }
 
   //Commented because https://github.com/hashicorp/terraform-provider-aws/issues/36531
-  /*partition_keys {
+  partition_keys {
     name = "network_name"
     type = "boolean"
-  }*/
+  }
 
   parameters = {
     "write.format.default"            = "parquet",
@@ -674,13 +674,13 @@ resource "aws_glue_catalog_table" "features" {
     }
 
   }
-}
+}*/
 
 
 resource "aws_glue_catalog_table_optimizer" "features_orphan_files_deletion_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
-  table_name    = aws_glue_catalog_table.features.name
+  table_name    = "features"
   type          = "orphan_file_deletion"
 
   configuration {
@@ -699,7 +699,7 @@ resource "aws_glue_catalog_table_optimizer" "features_orphan_files_deletion_opti
 resource "aws_glue_catalog_table_optimizer" "features_compaction_optimizer" {
   catalog_id    = "982534349340"
   database_name = aws_glue_catalog_database.bdp_db.name
-  table_name    = aws_glue_catalog_table.features.name
+  table_name    = "features"
   type          = "compaction"
 
   configuration {
