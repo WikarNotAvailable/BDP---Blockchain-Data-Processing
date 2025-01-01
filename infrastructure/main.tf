@@ -1,6 +1,5 @@
 module "s3_buckets" {
-  source             = "./modules/s3_buckets"
-  glue_script_bucket = var.glue_script_bucket
+  source = "./modules/s3_buckets"
 }
 
 module "iam" {
@@ -8,20 +7,28 @@ module "iam" {
   glue_role_name = var.glue_role_name
 }
 
+module "glue_catalog" {
+  source                          = "./modules/glue_catalog"
+  glue_role_arn                   = module.iam.glue_role_arn
+  bdp_cleaned_transactions_bucket = module.s3_buckets.bdp_cleaned_transactions_bucket
+  bdp_wallets_aggregations_bucket = module.s3_buckets.bdp_wallets_aggregations_bucket
+  bdp_features_bucket             = module.s3_buckets.bdp_features_bucket
+}
+
 module "iam_github_role" {
   source             = "./modules/iam_github_role"
   github_role_name   = var.github_role_name
-  glue_script_bucket = var.glue_script_bucket
+  glue_script_bucket = module.s3_buckets.glue_scripts_bucket
 }
 
 module "iam_github_user" {
   source             = "./modules/iam_github_user"
-  glue_script_bucket = var.glue_script_bucket
+  glue_script_bucket = module.s3_buckets.glue_scripts_bucket
 }
 
 module "glue_jobs" {
   source             = "./modules/glue_jobs"
-  glue_script_bucket = var.glue_script_bucket
+  glue_script_bucket = module.s3_buckets.glue_scripts_bucket
   glue_role_arn      = module.iam.glue_role_arn
   default_arguments  = var.glue_jobs_default_arguments
 }

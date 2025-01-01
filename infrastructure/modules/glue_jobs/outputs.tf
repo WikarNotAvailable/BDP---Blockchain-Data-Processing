@@ -1,8 +1,3 @@
-output "orphan_files_removal_job_name" {
-  value       = aws_glue_job.removing_orphan_files.name
-  description = "Name of the removing_orphan_files Glue job"
-}
-
 output "transactions_cleaning_job_name" {
   value       = aws_glue_job.transactions_cleaning.name
   description = "Name of the transactions_cleaning Glue job"
