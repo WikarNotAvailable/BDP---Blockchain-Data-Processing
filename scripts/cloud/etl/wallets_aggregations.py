@@ -244,7 +244,7 @@ TBLPROPERTIES (
     'write.num-buckets' = '2048'
     )
     """)
-
+    
 spark = (
     SparkSession.builder.appName("DataAggregations")    
     .config("spark.sql.parquet.enableVectorizedReader", "false")
