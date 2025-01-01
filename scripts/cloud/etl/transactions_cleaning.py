@@ -179,26 +179,9 @@ def setup_blockchain_db(spark):
 
 
 def setup_iceberg_table(spark):
-    spark.sql("""
-    CREATE TABLE IF NOT EXISTS glue_catalog.bdp.cleaned_transactions (
-        transaction_id STRING,
-        block_timestamp TIMESTAMP,
-        block_number BIGINT,
-        transaction_hash STRING,
-        transaction_index BIGINT,
-        fee DOUBLE,
-        sender_address STRING,
-        receiver_address STRING,
-        total_transferred_value DOUBLE,
-        total_input_value DOUBLE,
-        sent_value DOUBLE,
-        received_value DOUBLE,
-        network_name STRING
-    )
-    PARTITIONED BY (network_name)
-    LOCATION 's3://bdp-cleaned-transactions'
-    TBLPROPERTIES ('table_type' = 'ICEBERG', 'write.format.default'='parquet', 'write.parquet.compression-codec'='zstd')
-    """)
+    spark.sql("""ALTER TABLE glue_catalog.bdp.wallets_aggregations ADD IF NOT EXISTS
+        PARTITION (network_name = 'ethereum')         
+        PARTITION (network_name = 'bitcoin')""")
 
 def validate_date(date_str: str) -> bool:
     try:

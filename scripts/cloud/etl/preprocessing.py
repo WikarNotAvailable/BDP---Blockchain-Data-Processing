@@ -20,93 +20,9 @@ def setup_blockchain_db(spark):
 
 
 def setup_iceberg_table(spark):
-    spark.sql("""
-    CREATE TABLE IF NOT EXISTS glue_catalog.bdp.features (
-        block_timestamp FLOAT,
-        block_number FLOAT,
-        transaction_index FLOAT,
-        fee FLOAT,
-        total_transferred_value FLOAT,
-        total_input_value FLOAT,
-        sent_value FLOAT,
-        received_value FLOAT,
-        network_name BOOLEAN,
-
-        avg_sent_value FLOAT,
-        avg_received_value FLOAT,
-        avg_total_value_for_sender FLOAT,
-        avg_total_value_for_receiver FLOAT,
-
-        sum_sent_value FLOAT,
-        sum_received_value FLOAT,
-        sum_total_value_for_sender FLOAT,
-        sum_total_value_for_receiver FLOAT,
-
-        min_sent_value FLOAT,
-        min_received_value FLOAT,
-        min_total_value_for_sender FLOAT,
-        min_total_value_for_receiver FLOAT,
-
-        max_sent_value FLOAT,
-        max_received_value FLOAT,
-        max_total_value_for_sender FLOAT,
-        max_total_value_for_receiver FLOAT,
-
-        median_sent_value FLOAT,
-        median_received_value FLOAT,
-        median_total_value_for_sender FLOAT,
-        median_total_value_for_receiver FLOAT,
-
-        mode_sent_value FLOAT,
-        mode_received_value FLOAT,
-        mode_total_value_for_sender FLOAT,
-        mode_total_value_for_receiver FLOAT,
-
-        stddev_sent_value FLOAT,
-        stddev_received_value FLOAT,
-        stddev_total_value_for_sender FLOAT,
-        stddev_total_value_for_receiver FLOAT,
-
-        num_sent_transactions FLOAT,
-        num_received_transactions FLOAT,
-
-        avg_time_between_sent_transactions FLOAT,
-        avg_time_between_received_transactions FLOAT,
-
-        avg_outgoing_speed_count FLOAT,
-        avg_incoming_speed_count FLOAT,
-        avg_outgoing_speed_value FLOAT,
-        avg_incoming_speed_value FLOAT,
-
-        avg_outgoing_acceleration_count FLOAT,
-        avg_incoming_acceleration_count FLOAT,
-        avg_outgoing_acceleration_value FLOAT,
-        avg_incoming_acceleration_value FLOAT,
-
-        avg_fee_paid FLOAT,
-        total_fee_paid FLOAT,
-        min_fee_paid FLOAT,
-        max_fee_paid FLOAT,
-
-        activity_duration_for_sender FLOAT,
-        first_transaction_timestamp_for_sender FLOAT,
-        last_transaction_timestamp_for_sender FLOAT,
-
-        activity_duration_for_receiver FLOAT,
-        first_transaction_timestamp_for_receiver FLOAT,
-        last_transaction_timestamp_for_receiver FLOAT,
-
-        unique_out_degree FLOAT,
-        unique_in_degree FLOAT
-    )                                                                      
-    PARTITIONED BY (network_name)
-    LOCATION 's3://bdp-features'
-    TBLPROPERTIES (
-        'table_type' = 'ICEBERG',
-        'write.format.default' = 'parquet',
-        'write.parquet.compression-codec' = 'zstd'
-    )
-""")
+    spark.sql(""" ALTER TABLE glue_catalog.bdp.wallets_aggregations ADD IF NOT EXISTS
+        PARTITION (network_name = true)         
+        PARTITION (network_name = false) """)
 
 
 cols_dict = {

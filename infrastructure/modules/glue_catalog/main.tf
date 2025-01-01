@@ -12,14 +12,13 @@ resource "aws_glue_catalog_table" "cleaned_transactions" {
       metadata_operation = "CREATE"
     }
   }
-
-  partition_keys {
+  //Commented because https://github.com/hashicorp/terraform-provider-aws/issues/36531
+  /*partition_keys {
     name = "network_name"
     type = "string"
-  }
+  }*/
 
   parameters = {
-    "table_type"                      = "ICEBERG",
     "write.format.default"            = "parquet"
     "write.parquet.compression-codec" = "zstd"
   }
@@ -133,13 +132,13 @@ resource "aws_glue_catalog_table" "wallets_aggregations" {
     }
   }
 
-  partition_keys {
+  //Commented because https://github.com/hashicorp/terraform-provider-aws/issues/36531
+  /*partition_keys {
     name = "network_name"
     type = "string"
-  }
+  }*/
 
   parameters = {
-    "table_type"                      = "ICEBERG",
     "write.format.default"            = "parquet",
     "write.parquet.compression-codec" = "zstd",
     "write.bucketed-columns"          = "address",
@@ -407,13 +406,13 @@ resource "aws_glue_catalog_table" "features" {
     }
   }
 
-  partition_keys {
+  //Commented because https://github.com/hashicorp/terraform-provider-aws/issues/36531
+  /*partition_keys {
     name = "network_name"
     type = "boolean"
-  }
+  }*/
 
   parameters = {
-    "table_type"                      = "ICEBERG",
     "write.format.default"            = "parquet",
     "write.parquet.compression-codec" = "zstd"
   }
