@@ -233,15 +233,15 @@ def setup_iceberg_table(spark):
 
     unique_out_degree BIGINT,
     unique_in_degree BIGINT
-)
-PARTITIONED BY (network_name)
-LOCATION 's3://bdp-wallets-aggregations'
-TBLPROPERTIES (
-    'table_type' = 'ICEBERG',
-    'write.format.default' = 'parquet',
-    'write.parquet.compression-codec' = 'zstd',
-    'write.bucketed-columns' = 'address',
-    'write.num-buckets' = '2048'
+    )
+    PARTITIONED BY (network_name)
+    LOCATION 's3://bdp-wallets-aggregations'
+    TBLPROPERTIES (
+        'table_type' = 'ICEBERG',
+        'write.format.default' = 'parquet',
+        'write.parquet.compression-codec' = 'zstd',
+        'write.bucketed-columns' = 'address',
+        'write.num-buckets' = '2048'
     )
     """)
     
