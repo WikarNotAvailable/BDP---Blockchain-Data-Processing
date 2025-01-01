@@ -5,7 +5,7 @@ variable "bdp_cleaned_transactions_bucket" {
 
 variable "bdp_wallets_aggregations_bucket" {
   type        = string
-  description = "Wallets aggreagations bucket name"
+  description = "Wallets aggregations bucket name"
 }
 
 variable "bdp_features_bucket" {
