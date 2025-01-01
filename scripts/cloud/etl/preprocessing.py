@@ -350,7 +350,7 @@ transactions_eth_df = glueContext.create_data_frame.from_catalog(
 
 aggregations_btc_df = glueContext.create_data_frame.from_catalog(
     database="bdp",
-    table_name="aggregated_transactions",
+    table_name="wallets_aggregations",
     additional_options = {
         "useCatalogSchema": True,
         "useSparkDataSource": True
@@ -359,7 +359,7 @@ aggregations_btc_df = glueContext.create_data_frame.from_catalog(
 
 aggregations_eth_df = glueContext.create_data_frame.from_catalog(
     database="bdp",
-    table_name="aggregated_transactions",
+    table_name="wallets_aggregations",
     additional_options = {
         "useCatalogSchema": True,
         "useSparkDataSource": True
