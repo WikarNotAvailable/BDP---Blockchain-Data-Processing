@@ -161,12 +161,7 @@ def setup_blockchain_db(spark):
     """)
 
 def setup_iceberg_table(spark):
-    spark.sql("""
-    ALTER TABLE glue_catalog.bdp.wallets_aggregations ADD IF NOT EXISTS
-    PARTITION
-    (network_name = 'ethereum')         
-    (network_name = 'bitcoin')         
-
+    spark.sql("""      
     CREATE TABLE IF NOT EXISTS glue_catalog.bdp.wallets_aggregations (
     address STRING,
     network_name STRING,
