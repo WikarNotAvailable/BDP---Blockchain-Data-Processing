@@ -161,9 +161,89 @@ def setup_blockchain_db(spark):
     """)
 
 def setup_iceberg_table(spark):
-    spark.sql("""ALTER TABLE glue_catalog.bdp.wallets_aggregations ADD IF NOT EXISTS
-        PARTITION (network_name = 'ethereum')         
-        PARTITION (network_name = 'bitcoin') """)
+    spark.sql("""
+    ALTER TABLE glue_catalog.bdp.wallets_aggregations ADD IF NOT EXISTS
+    PARTITION
+    (network_name = 'ethereum')         
+    (network_name = 'bitcoin')         
+
+    CREATE TABLE IF NOT EXISTS glue_catalog.bdp.wallets_aggregations (
+    address STRING,
+    network_name STRING,
+    
+    avg_sent_value DOUBLE,
+    avg_received_value DOUBLE,
+    avg_total_value_for_sender DOUBLE,
+    avg_total_value_for_receiver DOUBLE,
+
+    sum_sent_value DOUBLE,
+    sum_received_value DOUBLE,
+    sum_total_value_for_sender DOUBLE,
+    sum_total_value_for_receiver DOUBLE,
+
+    min_sent_value DOUBLE,
+    min_received_value DOUBLE,
+    min_total_value_for_sender DOUBLE,
+    min_total_value_for_receiver DOUBLE,
+
+    max_sent_value DOUBLE,
+    max_received_value DOUBLE,
+    max_total_value_for_sender DOUBLE,
+    max_total_value_for_receiver DOUBLE,
+
+    median_sent_value DOUBLE,
+    median_received_value DOUBLE,
+    median_total_value_for_sender DOUBLE,
+    median_total_value_for_receiver DOUBLE,
+
+    mode_sent_value DOUBLE,
+    mode_received_value DOUBLE,
+    mode_total_value_for_sender DOUBLE,
+    mode_total_value_for_receiver DOUBLE,
+
+    stddev_sent_value DOUBLE,
+    stddev_received_value DOUBLE,
+    stddev_total_value_for_sender DOUBLE,
+    stddev_total_value_for_receiver DOUBLE,
+
+    num_sent_transactions BIGINT,
+    num_received_transactions BIGINT,
+
+    avg_time_between_sent_transactions DOUBLE,
+    avg_time_between_received_transactions DOUBLE,
+
+    avg_outgoing_speed_count DOUBLE,
+    avg_incoming_speed_count DOUBLE,
+    avg_outgoing_speed_value DOUBLE,
+    avg_incoming_speed_value DOUBLE,
+
+    avg_outgoing_acceleration_count DOUBLE,
+    avg_incoming_acceleration_count DOUBLE,
+    avg_outgoing_acceleration_value DOUBLE,
+    avg_incoming_acceleration_value DOUBLE,
+
+    avg_fee_paid DOUBLE,
+    total_fee_paid DOUBLE,
+    min_fee_paid DOUBLE,
+    max_fee_paid DOUBLE,
+
+    activity_duration BIGINT,
+    first_transaction_timestamp TIMESTAMP,
+    last_transaction_timestamp TIMESTAMP,
+
+    unique_out_degree BIGINT,
+    unique_in_degree BIGINT
+)
+PARTITIONED BY (network_name)
+LOCATION 's3://bdp-wallets-aggregations'
+TBLPROPERTIES (
+    'table_type' = 'ICEBERG',
+    'write.format.default' = 'parquet',
+    'write.parquet.compression-codec' = 'zstd',
+    'write.bucketed-columns' = 'address',
+    'write.num-buckets' = '2048'
+    )
+    """)
 
 spark = (
     SparkSession.builder.appName("DataAggregations")    
