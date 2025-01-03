@@ -13,6 +13,7 @@ from pyspark.sql.functions import expr
 def perform_etl(spark, s3, bucket_name, prefix, transform_func, start_date, end_date, temp_dir, label):
     transactions = extract(s3, bucket_name, prefix, start_date, end_date, temp_dir)
     df = transform(spark, transactions, transform_func)
+    df = df.na.drop()
     load(df, label)
     return df
 
@@ -20,8 +21,8 @@ spark = (
     SparkSession.builder.appName("DataETL")    
     .config("spark.sql.parquet.enableVectorizedReader", "true")
     .config("spark.sql.parquet.mergeSchema", "false") # No need as we explicitly specify the schema
-    .config("spark.executor.memory", "6g")
-    .config("spark.driver.memory", "2g")
+    .config("spark.executor.memory", "16g")
+    .config("spark.driver.memory", "8g")
     #.config("spark.local.dir", "/mnt/d/spark-temp")  # Change local dir to avoid permission issues
     .getOrCreate()
 )
@@ -32,8 +33,8 @@ s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
 bucket_name = "aws-public-blockchain"
 eth_prefix = "v1.0/eth/transactions/"
 btc_prefix = "v1.0/btc/transactions/"
-start_date = "2024-11-25"
-end_date = "2024-12-01"
+start_date = "2024-12-06"
+end_date = "2024-12-06"
 
 try:
     with tempfile.TemporaryDirectory() as temp_dir:

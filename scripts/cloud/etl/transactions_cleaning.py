@@ -245,7 +245,8 @@ def perform_etl(network_prefix: str, start_date: str, end_date: str) -> None:
 
     transactions = spark.read.parquet(*filtered_files)
     result_df = network.transform(transactions)
-
+    result_df.na.drop()
+    
     result_df.createOrReplaceTempView("new_transactions")
 
     # Perform MERGE INTO to skip matches and insert only new rows
