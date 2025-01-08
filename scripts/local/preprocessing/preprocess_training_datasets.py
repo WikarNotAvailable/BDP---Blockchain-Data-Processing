@@ -1,9 +1,9 @@
 from pyspark.sql import SparkSession
 from scripts.local.shared.schemas import joined_scaled_schema, transaction_schema, aggregations_schema
 from pyspark.sql.functions import col
-from scripts.local.anomalies_detection.preprocessing.components.preprocess_data_first_step import first_preprocess_training_data
-from scripts.local.anomalies_detection.preprocessing.components.preprocess_data_second_step import second_preprocess_training_data
-from scripts.local.anomalies_detection.preprocessing.components.preprocess_data_third_step import third_preprocess_training_data
+from scripts.local.preprocessing.components.preprocess_data_first_step import first_preprocess_training_data
+from scripts.local.preprocessing.components.preprocess_data_second_step import second_preprocess_training_data
+from scripts.local.preprocessing.components.preprocess_data_third_step import third_preprocess_training_data
 
 spark = (
     SparkSession.builder.appName("DataPreprocessing")    

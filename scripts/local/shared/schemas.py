@@ -265,28 +265,6 @@ aggregations_scaled_schema = StructType(
     ]
 )
 
-benchmark_input_schema = StructType(
-    [
-        StructField("hash", StringType(), False),
-        StructField("nonce", LongType(), False),
-        StructField("transaction_index", LongType(), False),
-        StructField("from_address", StringType(), False),
-        StructField("to_address", StringType(), False),
-        StructField("value", DoubleType(), False),
-        StructField("gas", LongType(), False),
-        StructField("gas_price", LongType(), False),
-        StructField("input", StringType(), True),
-        StructField("receipt_cumulative_gas_used", LongType(), False),
-        StructField("receipt_gas_used", LongType(), False),
-        StructField("block_timestamp", TimestampType(), False),  
-        StructField("block_number", LongType(), False),
-        StructField("block_hash", StringType(), False),
-        StructField("from_scam", LongType(), True), 
-        StructField("to_scam", LongType(), True),    
-        StructField("from_category", StringType(), True),
-        StructField("to_category", StringType(), True)
-])
-
 joined_scaled_schema = StructType(
     [
         StructField("transaction_id", StringType(), False),

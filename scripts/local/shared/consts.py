@@ -74,7 +74,7 @@ wallets_aggregations_string_cols = [
     "network_name"
 ]
 
-sender_fields = [
+receiver_fields = [
     "avg_received_value",
     "avg_total_value_for_receiver",
     "sum_received_value",
@@ -102,7 +102,7 @@ sender_fields = [
     "max_fee_paid",
 ]
 
-receiver_fields = [
+sender_fields = [
     "avg_sent_value",
     "avg_total_value_for_sender",
     "sum_sent_value",
