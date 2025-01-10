@@ -1,9 +1,8 @@
 from pyspark.sql.functions import col
-from scripts.local.shared.schemas import transaction_scaled_schema, aggregations_scaled_schema
 from scripts.local.shared.consts import sender_fields, receiver_fields, common_fields
 
-def join_transactions_with_aggregations(spark, transactions_dir, aggregations_dir, output_dir):
-    transactions_df = spark.read.schema(transaction_scaled_schema).parquet(transactions_dir)
+def join_transactions_with_aggregations(spark, transactions_dir, aggregations_dir, output_dir, transactions_scaled_schema, aggregations_scaled_schema):
+    transactions_df = spark.read.schema(transactions_scaled_schema).parquet(transactions_dir)
     aggregations_df = spark.read.schema(aggregations_scaled_schema).parquet(aggregations_dir)
 
     sender_aggregations = aggregations_df.select(
